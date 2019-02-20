@@ -20,7 +20,8 @@ namespace Tutorial011
 
     public Game1()
     {
-      graphics = new GraphicsDeviceManager(this);
+            // someting to chage the push to git state
+            graphics = new GraphicsDeviceManager(this);
       Content.RootDirectory = "Content";
     }
 
