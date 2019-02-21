@@ -3,25 +3,26 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
-using Tutorial011.Models;
-using Tutorial011.Sprites;
+using Desktop.Models;
+using Desktop.Sprites;
 
-namespace Tutorial011
+namespace Desktop
 {
-  /// <summary>
-  /// This is the main type for your game.
-  /// </summary>
-  public class Game1 : Game
-  {
-    GraphicsDeviceManager graphics;
-    SpriteBatch spriteBatch;
 
-    private List<Sprite> _sprites;
+    /// <summary>
+    /// This is the main type for your game.
+    /// </summary>
+    public class TheGame : Game
+    {
+        GraphicsDeviceManager graphics;
+        SpriteBatch spriteBatch;
+
+        private List<Sprite> _sprites;
 
     // 
     // ----------------------------- use GIT DESKTOP for git, ex. new repo ------------------------------------------------
     //
-        public Game1()
+        public TheGame()
     {    
         graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
@@ -68,7 +69,7 @@ namespace Tutorial011
           { "WalkRight", new Animation(Content.Load<Texture2D>("Player/WalkingRight"), 3) },
         })
         {
-          Position = new Vector2(100, 100),
+          
           Input = new Input()
           {
             Up = Keys.W,
@@ -76,6 +77,7 @@ namespace Tutorial011
             Left = Keys.A,
             Right = Keys.D,
           },
+          MoveType = General.CharacterMoveType
         },
         new Sprite(new Dictionary<string, Animation>()
         {
@@ -85,7 +87,7 @@ namespace Tutorial011
           { "WalkRight", new Animation(Content.Load<Texture2D>("Dragon/WalkingRight"), 3) },
         })
         {
-          Position = new Vector2(150, 100),
+          
           Input = new Input()
           {
             Up = Keys.Up,
@@ -93,9 +95,12 @@ namespace Tutorial011
             Left = Keys.Left,
             Right = Keys.Right,
           },
+          MoveType = General.CharacterMoveType
         },
       };
+            _sprites.ForEach(s => s.SetStartPosition());
     }
+
 
     /// <summary>
     /// UnloadContent will be called once per game and is the place to unload
@@ -114,7 +119,7 @@ namespace Tutorial011
     protected override void Update(GameTime gameTime)
     {
       foreach (var sprite in _sprites)
-        sprite.Update(gameTime, _sprites);
+        sprite.Update(gameTime, sprite);
 
       base.Update(gameTime);
     }

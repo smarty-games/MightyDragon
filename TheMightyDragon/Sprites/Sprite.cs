@@ -6,70 +6,91 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Tutorial011.Managers;
-using Tutorial011.Models;
-
-namespace Tutorial011.Sprites
+using Desktop.Managers;
+using Desktop.Models;
+using Desktop;
+namespace Desktop.Sprites
 {
-  public class Sprite
-  {
-    #region Fields
-
-    protected AnimationManager _animationManager;
-
-    protected Dictionary<string, Animation> _animations;
-
-    protected Vector2 _position;
-
-    protected Texture2D _texture;
-
-    #endregion
-
-    #region Properties
-
-    public Input Input;
-
-    public Vector2 Position
+    public class Sprite
     {
-      get { return _position; }
-      set
-      {
-        _position = value;
+        #region Fields
 
-        if (_animationManager != null)
-          _animationManager.Position = _position;
-      }
-    }
+        protected AnimationManager _animationManager;
 
-    public float Speed = 1f;
+        protected Dictionary<string, Animation> _animations;
 
-    public Vector2 Velocity;
+        protected Vector2 _position;
 
-    #endregion
+        protected Texture2D _texture;
 
-    #region Methods
+        #endregion
 
-    public virtual void Draw(SpriteBatch spriteBatch)
-    {
-      if (_texture != null)
-        spriteBatch.Draw(_texture, Position, Color.White);
-      else if (_animationManager != null)
-        _animationManager.Draw(spriteBatch);
-      else throw new Exception("This ain't right..!");
-    }
+        #region Properties
 
-    public virtual void Move()
-    {
-      if (Keyboard.GetState().IsKeyDown(Input.Up))
-        Velocity.Y = -Speed;
-      else if (Keyboard.GetState().IsKeyDown(Input.Down))
-        Velocity.Y = Speed;
-      else if (Keyboard.GetState().IsKeyDown(Input.Left))
-        Velocity.X = -Speed;
-      else if (Keyboard.GetState().IsKeyDown(Input.Right))
-        Velocity.X = Speed;
-    }
+        public Input Input;
 
+        public Vector2 Position
+        {
+            get { return _position; }
+            set
+            {
+                _position = value;
+
+                if (_animationManager != null)
+                    _animationManager.Position = _position;
+            }
+        }
+        public int FrameWidth;
+        public int FrameHeight;
+        public General.MoveType MoveType;
+
+        public float Speed = 2f;
+        public Vector2 Velocity;
+        protected General.Direction Direction = General.Direction.Down;
+
+
+        #endregion
+
+        #region Methods
+
+        public virtual void Draw(SpriteBatch spriteBatch)
+        {
+            if (_texture != null)
+                spriteBatch.Draw(_texture, Position, Color.White);
+            else if (_animationManager != null)
+                _animationManager.Draw(spriteBatch);
+            else throw new Exception("This ain't right..!");
+        }
+
+        public virtual void Move()
+        {
+            if (Keyboard.GetState().IsKeyDown(Input.Up))
+            {
+                Speed = General.GameSpeed;
+                Velocity.Y = -Speed;
+                Direction = General.Direction.Up;
+            }
+            else if (Keyboard.GetState().IsKeyDown(Input.Down))
+            {
+                Speed = General.GameSpeed;
+                Velocity.Y = Speed;
+                Direction = General.Direction.Down;
+            }
+            else if (Keyboard.GetState().IsKeyDown(Input.Left))
+            {
+                Speed = General.GameSpeed;
+                Velocity.X = -Speed;
+                Direction = General.Direction.Left;
+            }
+            else if (Keyboard.GetState().IsKeyDown(Input.Right))
+            {
+                Speed = General.GameSpeed;
+                Velocity.X = Speed;
+                Direction = General.Direction.Right;
+            }
+
+        }
+    
     protected virtual void SetAnimations()
     {
       if (Velocity.X > 0)
@@ -86,7 +107,11 @@ namespace Tutorial011.Sprites
     public Sprite(Dictionary<string, Animation> animations)
     {
       _animations = animations;
-      _animationManager = new AnimationManager(_animations.First().Value);
+      var animation = _animations.First().Value;
+            FrameWidth = animation.FrameWidth;
+            FrameHeight = animation.FrameHeight;
+      _animationManager = new AnimationManager(animation);
+            
     }
 
     public Sprite(Texture2D texture)
@@ -94,18 +119,40 @@ namespace Tutorial011.Sprites
       _texture = texture;
     }
 
-    public virtual void Update(GameTime gameTime, List<Sprite> sprites)
+    public virtual void Update(GameTime gameTime, Sprite sprite)
     {
-      Move();
 
-      SetAnimations();
+            if (_animations != null)
+            {
+                Move();
+                Position += Velocity;
 
-      _animationManager.Update(gameTime);
+                if ((int)Position.X % FrameWidth == 0   &&
+                    (int)Position.Y % FrameHeight == 0) 
+                
+                {
+                    Direction = General.Direction.Idle;
+                    Speed = 0f;
+                    Velocity = Vector2.Zero;
+                }
 
-      Position += Velocity;
-      Velocity = Vector2.Zero;
+                SetAnimations();
+
+                _animationManager.Update(gameTime);
+
+
+
+            }
     }
 
-    #endregion
-  }
+        internal void SetStartPosition()
+        {
+            var rnd = new Random(3);
+            Position = new Vector2(rnd.Next(1,10) * FrameWidth, rnd.Next(1, 10) * FrameHeight);
+        }
+
+        #endregion
+
+
+    }
 }

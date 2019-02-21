@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Tutorial011.Models;
+using Desktop.Models;
 
-namespace Tutorial011.Managers
+namespace Desktop.Managers
 {
   public class AnimationManager
   {
