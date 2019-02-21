@@ -18,11 +18,13 @@ namespace Tutorial011
 
     private List<Sprite> _sprites;
 
-    public Game1()
-    {
-            // someting to chage the push to git state
-            graphics = new GraphicsDeviceManager(this);
-      Content.RootDirectory = "Content";
+    // 
+    // ----------------------------- use GIT DESKTOP for git, ex. new repo ------------------------------------------------
+    //
+        public Game1()
+    {    
+        graphics = new GraphicsDeviceManager(this);
+        Content.RootDirectory = "Content";
     }
 
     /// <summary>
@@ -77,10 +79,10 @@ namespace Tutorial011
         },
         new Sprite(new Dictionary<string, Animation>()
         {
-          { "WalkUp", new Animation(Content.Load<Texture2D>("Player/WalkingUp"), 3) },
-          { "WalkDown", new Animation(Content.Load<Texture2D>("Player/WalkingDown"), 3) },
-          { "WalkLeft", new Animation(Content.Load<Texture2D>("Player/WalkingLeft"), 3) },
-          { "WalkRight", new Animation(Content.Load<Texture2D>("Player/WalkingRight"), 3) },
+          { "WalkUp", new Animation(Content.Load<Texture2D>("Dragon/WalkingUp"), 3) },
+          { "WalkDown", new Animation(Content.Load<Texture2D>("Dragon/WalkingDown"), 3) },
+          { "WalkLeft", new Animation(Content.Load<Texture2D>("Dragon/WalkingLeft"), 3) },
+          { "WalkRight", new Animation(Content.Load<Texture2D>("Dragon/WalkingRight"), 3) },
         })
         {
           Position = new Vector2(150, 100),
