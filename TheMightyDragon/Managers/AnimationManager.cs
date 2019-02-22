@@ -59,7 +59,7 @@ namespace Desktop.Managers
       if(_timer > _animation.FrameSpeed)
       {
         _timer = 0f;
-
+        
         _animation.CurrentFrame++;
 
         if (_animation.CurrentFrame >= _animation.FrameCount)

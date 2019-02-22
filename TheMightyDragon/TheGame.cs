@@ -51,23 +51,17 @@ namespace Desktop
       spriteBatch = new SpriteBatch(GraphicsDevice);
 
       // NOTE: I no-longer use this reference as it affects different objects if being used multiple times!
-      var animations = new Dictionary<string, Animation>()
+      var playeraAnimations = new Dictionary<string, Animation>()
       {
-        { "WalkUp", new Animation(Content.Load<Texture2D>("Player/WalkingUp"), 3) },
-        { "WalkDown", new Animation(Content.Load<Texture2D>("Player/WalkingDown"), 3) },
-        { "WalkLeft", new Animation(Content.Load<Texture2D>("Player/WalkingLeft"), 3) },
-        { "WalkRight", new Animation(Content.Load<Texture2D>("Player/WalkingRight"), 3) },
+        { "WalkUp", new Animation(Content.Load<Texture2D>("Player/WalkingUp"), 3,0.1f) },
+        { "WalkDown", new Animation(Content.Load<Texture2D>("Player/WalkingDown"), 3, 0.1f) },
+        { "WalkLeft", new Animation(Content.Load<Texture2D>("Player/WalkingLeft"), 3,0.1f) },
+        { "WalkRight", new Animation(Content.Load<Texture2D>("Player/WalkingRight"), 3,0.1f) },
       };
 
       _sprites = new List<Sprite>()
       {
-        new Sprite(new Dictionary<string, Animation>()
-        {
-          { "WalkUp", new Animation(Content.Load<Texture2D>("Player/WalkingUp"), 3) },
-          { "WalkDown", new Animation(Content.Load<Texture2D>("Player/WalkingDown"), 3) },
-          { "WalkLeft", new Animation(Content.Load<Texture2D>("Player/WalkingLeft"), 3) },
-          { "WalkRight", new Animation(Content.Load<Texture2D>("Player/WalkingRight"), 3) },
-        })
+        new Sprite(playeraAnimations)
         {
           
           Input = new Input()
@@ -77,14 +71,20 @@ namespace Desktop
             Left = Keys.A,
             Right = Keys.D,
           },
-          MoveType = General.CharacterMoveType
+          MoveType = General.CharacterMoveType,
+          Name = "me"
         },
         new Sprite(new Dictionary<string, Animation>()
         {
-          { "WalkUp", new Animation(Content.Load<Texture2D>("Dragon/WalkingUp"), 3) },
-          { "WalkDown", new Animation(Content.Load<Texture2D>("Dragon/WalkingDown"), 3) },
-          { "WalkLeft", new Animation(Content.Load<Texture2D>("Dragon/WalkingLeft"), 3) },
-          { "WalkRight", new Animation(Content.Load<Texture2D>("Dragon/WalkingRight"), 3) },
+          { "WalkUp", new Animation(Content.Load<Texture2D>("Dragon/WalkingUp"), 3,0.2f) },
+          { "WalkDown", new Animation(Content.Load<Texture2D>("Dragon/WalkingDown"), 3,0.2f) },
+          { "WalkLeft", new Animation(Content.Load<Texture2D>("Dragon/WalkingLeft"), 3, 0.2f) },
+          { "WalkRight", new Animation(Content.Load<Texture2D>("Dragon/WalkingRight"), 3, 0.2f) },
+          { "AttackUp", new Animation(Content.Load<Texture2D>("Dragon/AttackUp"), 3,0.2f) },
+          { "AttackDown", new Animation(Content.Load<Texture2D>("Dragon/AttackDown"), 3,0.2f) },
+          { "AttackLeft", new Animation(Content.Load<Texture2D>("Dragon/AttackLeft"), 3, 0.2f) },
+          { "AttackRight", new Animation(Content.Load<Texture2D>("Dragon/AttackRight"), 3, 0.2f) }
+
         })
         {
           
@@ -95,7 +95,8 @@ namespace Desktop
             Left = Keys.Left,
             Right = Keys.Right,
           },
-          MoveType = General.CharacterMoveType
+          MoveType = General.CharacterMoveType,
+          Name = "dragon"
         },
       };
             _sprites.ForEach(s => s.SetStartPosition());
