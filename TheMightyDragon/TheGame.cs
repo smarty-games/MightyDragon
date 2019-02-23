@@ -57,6 +57,10 @@ namespace Desktop
         { "WalkDown", new Animation(Content.Load<Texture2D>("Player/WalkingDown"), 3, 0.1f) },
         { "WalkLeft", new Animation(Content.Load<Texture2D>("Player/WalkingLeft"), 3,0.1f) },
         { "WalkRight", new Animation(Content.Load<Texture2D>("Player/WalkingRight"), 3,0.1f) },
+        { "IdleUp", new Animation(Content.Load<Texture2D>("Player/IdleUp"), 3,0.1f) },
+        { "IdleDown", new Animation(Content.Load<Texture2D>("Player/IdleDown"), 3, 0.1f) },
+        { "IdleLeft", new Animation(Content.Load<Texture2D>("Player/IdleLeft"), 3,0.1f) },
+        { "IdleRight", new Animation(Content.Load<Texture2D>("Player/IdleRight"), 3,0.1f) },
       };
 
       _sprites = new List<Sprite>()
@@ -76,6 +80,10 @@ namespace Desktop
         },
         new Sprite(new Dictionary<string, Animation>()
         {
+          { "IdleUp", new Animation(Content.Load<Texture2D>("Dragon/IdleUp"), 3,0.2f) },
+          { "IdleDown", new Animation(Content.Load<Texture2D>("Dragon/IdleDown"), 3,0.2f) },
+          { "IdleLeft", new Animation(Content.Load<Texture2D>("Dragon/IdleLeft"), 3, 0.2f) },
+          { "IdleRight", new Animation(Content.Load<Texture2D>("Dragon/IdleRight"), 3, 0.2f) },
           { "WalkUp", new Animation(Content.Load<Texture2D>("Dragon/WalkingUp"), 3,0.2f) },
           { "WalkDown", new Animation(Content.Load<Texture2D>("Dragon/WalkingDown"), 3,0.2f) },
           { "WalkLeft", new Animation(Content.Load<Texture2D>("Dragon/WalkingLeft"), 3, 0.2f) },

@@ -95,23 +95,31 @@ namespace Desktop.Sprites
                 Direction = General.Direction.Right;
                 LastDirection = Direction;
             }
-
-
         }
 
         protected virtual void SetAnimations()
         {
-
-                if ((_gameTime.TotalGameTime.TotalSeconds - LastAttackTime >5) && _name == "dragon") // attack once at 5 secs
-                {
-                    _animationManager.Play(_animations["Attack" + LastDirection.ToString()]);
-                    LastAttackTime = _gameTime.TotalGameTime.TotalSeconds;
+            
+            if ((_gameTime.TotalGameTime.TotalSeconds - LastAttackTime > 5) && _name == "dragon") // attack once at 5 secs
+            {
+                Direction = General.Direction.Idle;
+                LastAttackTime = _gameTime.TotalGameTime.TotalSeconds;
+                _animationManager.Play(_animations["Idle" + LastDirection.ToString()]);
             }
-                else if (Direction != General.Direction.Idle)
+            else if ((_gameTime.TotalGameTime.TotalSeconds - LastAttackTime > 4) && _name == "dragon") // attack once at 5 secs
+            {
+                Direction = General.Direction.Attack;
+                _animationManager.Play(_animations["Attack" + LastDirection.ToString()]);
+
+            }
+            else if (Direction != General.Direction.Idle && Direction != General.Direction.Attack)
+            {
                 _animationManager.Play(_animations["Walk" + Direction.ToString()]);
-                
-                 
-              
+            }
+            else if (Direction == General.Direction.Idle)
+            {
+                _animationManager.Play(_animations["Idle" + LastDirection.ToString()]);
+            }
         }
 
         public Sprite(Dictionary<string, Animation> animations)
@@ -133,24 +141,22 @@ namespace Desktop.Sprites
         public virtual void Update(GameTime gameTime, Sprite sprite, bool isStartGame = false)
         {
             _gameTime = gameTime;
-            if (isStartGame) SetStartPosition();
-             
+            if (isStartGame)
+            {
+                SetStartPosition();
+            }
             if (_animations != null)
             {
                 if (Direction == General.Direction.Idle)
                 {
-
-                    Move();
-
+                    Move(); // set direction if moving key is pressed
                 }
+
                 Position += Velocity;
 
-                if ((int)Position.X % FrameWidth == 0 &&
-                        (int)Position.Y % FrameHeight == 0)
-
+                if ((int)Position.X % FrameWidth == 0 && (int)Position.Y % FrameHeight == 0)
                 {
                     Direction = General.Direction.Idle;
-
                     Speed = 0f;
                     Velocity = Vector2.Zero;
                 }
@@ -158,9 +164,6 @@ namespace Desktop.Sprites
                 SetAnimations();
 
                 _animationManager.Update(gameTime);
-
-
-
             }
         }
 

@@ -1,7 +1,6 @@
 ﻿using System;
 namespace Desktop
 {
-
     public static class General
     {
         public enum MoveType
@@ -11,13 +10,16 @@ namespace Desktop
         }
         public enum Direction
         {
-            Idle = 0,
-            Left = 1,
-            Down = 2,
-            Right = 3,
-            Up = 4
+            None = 0,
+            Idle = 1,
+            Left = 2,
+            Down = 4,
+            Right = 8,
+            Up = 16,
+            Attack = 32
         }
         public const MoveType CharacterMoveType = MoveType.ToColission;
         internal static float GameSpeed = 2f;
+        public static int TotalAttackLoops = 2;
     }
 }

@@ -42,6 +42,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Sprites\Dragon.cs" />
     <Compile Include="TheGame.cs" />
     <Compile Include="Managers\AnimationManager.cs" />
     <Compile Include="Models\Animation.cs" />
