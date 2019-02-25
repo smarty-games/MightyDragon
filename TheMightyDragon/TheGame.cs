@@ -16,6 +16,8 @@ namespace Desktop
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        int ScreenWidth;
+        int ScreenHeight;
 
         private List<Sprite> _sprites;
 
@@ -36,8 +38,7 @@ namespace Desktop
     /// </summary>
     protected override void Initialize()
     {
-      // TODO: Add your initialization logic here
-
+      
       base.Initialize();
     }
 
@@ -47,8 +48,11 @@ namespace Desktop
     /// </summary>
     protected override void LoadContent()
     {
-      // Create a new SpriteBatch, which can be used to draw textures.
-      spriteBatch = new SpriteBatch(GraphicsDevice);
+             ScreenManager.Width = GraphicsDevice.Viewport.Width;
+            ScreenManager.Height = GraphicsDevice.Viewport.Height;
+             ScreenHeight = GraphicsDevice.Viewport.Height;
+            // Create a new SpriteBatch, which can be used to draw textures.
+            spriteBatch = new SpriteBatch(GraphicsDevice);
 
       // NOTE: I no-longer use this reference as it affects different objects if being used multiple times!
       var playeraAnimations = new Dictionary<string, Animation>()
@@ -76,7 +80,8 @@ namespace Desktop
             Right = Keys.D,
           },
           MoveType = General.CharacterMoveType,
-          Name = "me"
+          Name = "me",
+          PlayerType = General.ePlayerType.Player
         },
         new Sprite(new Dictionary<string, Animation>()
         {
@@ -104,7 +109,8 @@ namespace Desktop
             Right = Keys.Right,
           },
           MoveType = General.CharacterMoveType,
-          Name = "dragon"
+          Name = "dragon",
+          PlayerType = General.ePlayerType.Dragon
         },
       };
             _sprites.ForEach(s => s.SetStartPosition());

@@ -3,12 +3,12 @@ namespace Desktop
 {
     public static class General
     {
-        public enum MoveType
+        public enum eMoveType
         {
             ToColission = 0,
             ToTile = 1
         }
-        public enum Direction
+        public enum eDirection
         {
             None = 0,
             Idle = 1,
@@ -18,7 +18,12 @@ namespace Desktop
             Up = 16,
             Attack = 32
         }
-        public const MoveType CharacterMoveType = MoveType.ToColission;
+        public enum ePlayerType
+        {
+            Player = 0,
+            Dragon = 1
+        }
+        public const eMoveType CharacterMoveType = eMoveType.ToColission;
         internal static float GameSpeed = 2f;
         public static int TotalAttackLoops = 2;
     }
