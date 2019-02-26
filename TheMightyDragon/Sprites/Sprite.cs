@@ -169,21 +169,23 @@ namespace Desktop.Sprites
             StepX = this is Dragon ? 64 : 32;
             StepY = this is Dragon ? 64 : 32;
             Position = new Vector2(rnd.Next(1, 4) * StepX, rnd.Next(1, 4) * StepY);
+            if (this is Player) Position = Vector2.Zero;
             Velocity = Vector2.Zero;
             Direction = General.eDirection.Idle;
             LastDirection = General.eDirection.Down;
         }
+        // update position only if collision and matrix positions are ok for the next move
         private void UpdatePosition()
         {
 
             bool ok = true;
             if (Position.X + Velocity.X < 0) ok = false;
-            if (Position.X + StepX + Velocity.X > ScreenManager.Width)
+            if (Position.X + StepX + Velocity.X > (ScreenManager.Width/this.StepX) * this.StepX)
             {
                 ok = false;
             }
             if (Position.Y + Velocity.Y < 0) ok = false;
-            if (Position.Y + StepY + Velocity.Y > ScreenManager.Height)
+            if (Position.Y + StepY + Velocity.Y > (ScreenManager.Height/this.StepY) * this.StepY)
             {
                 ok = false;
             }
@@ -217,17 +219,39 @@ namespace Desktop.Sprites
                         }
 
                     }
-                    if (!source.IsCollision)
+                    if (!source.IsCollision && CanMove())
                     {
                         Position += Velocity;
+                        if (this is Player)
+                        {
+                            int mX = (int)(Position.Y / StepY);
+                            int mY = (int)(Position.X / StepX);
+                            _game.PlayerMatrix[mX][mY] = 1;
+                        }
                     }
                 }
             }
         }
+
+        private bool CanMove()
+        {
+            int matrixX = Direction == General.eDirection.Down ?
+                                         (int)((Position.Y + (StepY + Velocity.Y - 1)) / StepY):
+                                         (int)((Position.Y + Velocity.Y) / StepY);
+            int matrixY = Direction == General.eDirection.Right ?
+                                         (int)((Position.X + (StepX + Velocity.X - 1)) / StepX) :
+                                         (int)((Position.X + Velocity.X) / StepX);
+            if (_game.PlayerMatrix[matrixX][matrixY] == 1)
+            {
+                return true;
+            }
+            else return false;
+        }
+
         /// <summary>
         /// check for colision with destination
         /// </summary>
-        /// <param name="destinationType"></param>
+        /// <param name="destinationType">the destination sprite which the collision is computed for</param>
         /// <returns></returns>
         internal bool CollisionWith(Sprite destination)
         {
