@@ -23,8 +23,7 @@ namespace Desktop
             Player = 0,
             Dragon = 1
         }
-        public const eMoveType CharacterMoveType = eMoveType.ToColission;
-        internal static float GameSpeed = 2f;
+        internal static int GameSpeed = 2;
         public static int TotalAttackLoops = 2;
     }
 }

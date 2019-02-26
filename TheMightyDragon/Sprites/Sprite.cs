@@ -20,7 +20,8 @@ namespace Desktop.Sprites
         protected Dictionary<string, Animation> _animations;
 
         protected Vector2 _position;
-
+        // keep reference to game for accesing properties
+        protected TheGame _game;
         protected Texture2D _texture;
         protected GameTime _gameTime;
         protected string _name;
@@ -29,7 +30,6 @@ namespace Desktop.Sprites
         #region Properties
 
         public Input Input;
-        public General.ePlayerType PlayerType;
         public Vector2 Position
         {
             get { return _position; }
@@ -42,8 +42,11 @@ namespace Desktop.Sprites
             }
         }
         public string Name { get { return _name; } set { _name = value; } }
-        public int FrameWidth;
-        public int FrameHeight;
+
+        public bool IsCollision = false;
+
+        public int StepX;
+        public int StepY;
         public General.eMoveType MoveType;
 
         public float Speed = 2f;
@@ -64,7 +67,71 @@ namespace Desktop.Sprites
                 _animationManager.Draw(spriteBatch);
             else throw new Exception("This ain't right..!");
         }
+        
+        protected virtual void SetAnimations()
+        {
+            
+            if ((_gameTime.TotalGameTime.TotalSeconds - LastAttackTime > 5) && this is Dragon) // attack once at 5 secs
+            {
+                Direction = General.eDirection.Idle;
+                LastAttackTime = _gameTime.TotalGameTime.TotalSeconds;
+                _animationManager.Play(_animations["Idle" + LastDirection.ToString()]);
+            }
+            else if ((_gameTime.TotalGameTime.TotalSeconds - LastAttackTime > 4) && this is Dragon) // attack once at 5 secs
+            {
+                Direction = General.eDirection.Attack;
+                _animationManager.Play(_animations["Attack" + LastDirection.ToString()]);
 
+            }
+            else if (Direction != General.eDirection.Idle && Direction != General.eDirection.Attack)
+            {
+                _animationManager.Play(_animations["Walk" + Direction.ToString()]);
+            }
+            else if (Direction == General.eDirection.Idle)
+            {
+                _animationManager.Play(_animations["Idle" + LastDirection.ToString()]);
+            }
+        }
+        public Sprite(Dictionary<string, Animation> animations,TheGame game)
+        {
+            _animations = animations;
+            var animation = _animations.First().Value;
+            _animationManager = new AnimationManager(animation);
+            _game = game;
+        }
+        public Sprite(Texture2D texture)
+        {
+            _texture = texture;
+        }
+        public virtual void Update(GameTime gameTime, Sprite sprite, bool isStartGame = false)
+        {
+            _gameTime = gameTime;
+            if (isStartGame)
+            {
+                SetStartPosition();
+            }
+            if (_animations != null)
+            {
+                if (Direction == General.eDirection.Idle)
+                {
+                    Move(); // set direction if moving key is pressed
+                }
+                UpdatePosition();
+
+                if ((int)Position.X % StepX == 0 && (int)Position.Y % StepY == 0)
+                {
+                    Stop();
+                }
+                SetAnimations();
+                _animationManager.Update(gameTime);
+            }
+        }
+        public virtual void Stop()
+        {
+            Direction = General.eDirection.Idle;
+            Speed = 0f;
+            Velocity = Vector2.Zero;
+        }
         public virtual void Move()
         {
             if (Keyboard.GetState().IsKeyDown(Input.Up))
@@ -96,111 +163,89 @@ namespace Desktop.Sprites
                 LastDirection = Direction;
             }
         }
-
-        protected virtual void SetAnimations()
-        {
-            
-            if ((_gameTime.TotalGameTime.TotalSeconds - LastAttackTime > 5) && _name == "dragon") // attack once at 5 secs
-            {
-                Direction = General.eDirection.Idle;
-                LastAttackTime = _gameTime.TotalGameTime.TotalSeconds;
-                _animationManager.Play(_animations["Idle" + LastDirection.ToString()]);
-            }
-            else if ((_gameTime.TotalGameTime.TotalSeconds - LastAttackTime > 4) && _name == "dragon") // attack once at 5 secs
-            {
-                Direction = General.eDirection.Attack;
-                _animationManager.Play(_animations["Attack" + LastDirection.ToString()]);
-
-            }
-            else if (Direction != General.eDirection.Idle && Direction != General.eDirection.Attack)
-            {
-                _animationManager.Play(_animations["Walk" + Direction.ToString()]);
-            }
-            else if (Direction == General.eDirection.Idle)
-            {
-                _animationManager.Play(_animations["Idle" + LastDirection.ToString()]);
-            }
-        }
-
-        public Sprite(Dictionary<string, Animation> animations)
-        {
-            _animations = animations;
-            var animation = _animations.First().Value;
-            FrameWidth = animation.FrameWidth;
-            FrameHeight = animation.FrameHeight;
-            _animationManager = new AnimationManager(animation);
-         
-        }
-
-
-        public Sprite(Texture2D texture)
-        {
-            _texture = texture;
-        }
-
-        public virtual void Update(GameTime gameTime, Sprite sprite, bool isStartGame = false)
-        {
-            _gameTime = gameTime;
-            if (isStartGame)
-            {
-                SetStartPosition();
-            }
-            if (_animations != null)
-            {
-                if (Direction == General.eDirection.Idle)
-                {
-                    Move(); // set direction if moving key is pressed
-                }
-
-                UpdatePosition();
-
-
-                if ((int)Position.X % FrameWidth == 0 && (int)Position.Y % FrameHeight == 0)
-                {
-                    Direction = General.eDirection.Idle;
-                    Speed = 0f;
-                    Velocity = Vector2.Zero;
-                }
-
-                SetAnimations();
-
-                _animationManager.Update(gameTime);
-            }
-        }
-
-        private void UpdatePosition()
-        {
-
-            if (PlayerType == General.ePlayerType.Player)
-            {
-                bool ok = true;
-                if (Position.X + Velocity.X <= 0) ok = false;
-                if (Position.X + FrameWidth + Velocity.X >=  ScreenManager.Width)
-                {
-                    ok = false;
-                }
-                if (Position.Y + Velocity.Y <= 0) ok = false;
-                if (Position.Y + FrameHeight + Velocity.Y >= ScreenManager.Height)
-                {
-                    ok = false;
-                }
-                if (ok) Position += Velocity;
-            }
-            else if (PlayerType == General.ePlayerType.Dragon)
-            {
-                Position += Velocity;
-            }
-        }
-
         internal void SetStartPosition()
         {
             var rnd = new Random(31);
-            Position = new Vector2(rnd.Next(1, 4) * FrameWidth, rnd.Next(1, 4) * FrameHeight);
+            StepX = this is Dragon ? 64 : 32;
+            StepY = this is Dragon ? 64 : 32;
+            Position = new Vector2(rnd.Next(1, 4) * StepX, rnd.Next(1, 4) * StepY);
             Velocity = Vector2.Zero;
             Direction = General.eDirection.Idle;
             LastDirection = General.eDirection.Down;
-
         }
+        private void UpdatePosition()
+        {
+
+            bool ok = true;
+            if (Position.X + Velocity.X < 0) ok = false;
+            if (Position.X + StepX + Velocity.X > ScreenManager.Width)
+            {
+                ok = false;
+            }
+            if (Position.Y + Velocity.Y < 0) ok = false;
+            if (Position.Y + StepY + Velocity.Y > ScreenManager.Height)
+            {
+                ok = false;
+            }
+            if (ok)
+
+            {
+                //check for collision of Player with Dragon
+                foreach (var source in _game.Sprites)
+                {
+                    if (source is Player)
+                    {
+
+                        foreach (var destination in _game.Sprites)
+                        {
+                            if (destination is Dragon)
+                            {
+                                if (source.CollisionWith(destination))
+                                {
+                                    source.IsCollision = true;
+                                    destination.IsCollision = true;
+                                    source.Stop();
+                                    destination.Stop();
+                                }
+                                else
+                                {
+                                    source.IsCollision = false;
+                                    destination.IsCollision = false;
+                                }
+
+                            }
+                        }
+
+                    }
+                    if (!source.IsCollision)
+                    {
+                        Position += Velocity;
+                    }
+                }
+            }
+        }
+        /// <summary>
+        /// check for colision with destination
+        /// </summary>
+        /// <param name="destinationType"></param>
+        /// <returns></returns>
+        internal bool CollisionWith(Sprite destination)
+        {
+            Rectangle sourceRect = new Rectangle((int)(this.Position.X + this.Velocity.X),
+                                                 (int)(this.Position.Y + this.Velocity.Y),
+                                                 this.StepX,
+                                                 this.StepY);
+            Rectangle destinationRect = new Rectangle((int)(destination.Position.X + destination.Velocity.X),
+                                                                     (int)(destination.Position.Y + destination.Velocity.Y),
+                                                                     destination.StepX,
+                                                                     destination.StepY);
+            if (sourceRect.Intersects(destinationRect))
+            {
+                return true;
+            }
+            else return false;
+        }
+
 
         #endregion
 
