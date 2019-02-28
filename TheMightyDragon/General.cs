@@ -23,7 +23,12 @@ namespace Desktop
             Player = 0,
             Dragon = 1
         }
-        internal static int GameSpeed = 2;
-        public static int TotalAttackLoops = 2;
+        public enum eGroundType
+        {
+            Safe = 0,
+            Danger = 1
+        }
+        public static int GameSpeed = 2;
+        public static int TileSize = 32;
     }
 }

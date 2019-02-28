@@ -36,7 +36,8 @@ namespace Desktop
                 new int[25] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
         };
 
-        internal List<Sprite> Sprites;
+        public Dictionary<string, Sprite> Sprites;
+
 
         // 
         // ----------------------------- use GIT DESKTOP for git, ex. new repo ------------------------------------------------
@@ -97,9 +98,9 @@ namespace Desktop
                 { "AttackRight", new Animation(Content.Load<Texture2D>("Dragon/AttackRight"), 3, 0.2f) }
                 };
 
-            Sprites = new List<Sprite>()
+            Sprites = new Dictionary<string,Sprite>()
               {
-                new Player(playeraAnimations,this)
+                {"player", new Player(playeraAnimations,this)
                 {
                   Input = new Input()
                   {
@@ -110,8 +111,9 @@ namespace Desktop
                   },
                   MoveType = General.eMoveType.ToTile,
                   Name = "me",
+                }
                 },
-
+                {"dragon",
                 new Dragon(dragonAnimations,this)
                 {
                   Input = new Input()
@@ -123,10 +125,11 @@ namespace Desktop
                   },
                   MoveType = General.eMoveType.ToColission,
                   Name = "dragon",
-                },
+                } },
             };
 
-            Sprites.ForEach(s => s.SetStartPosition());
+            ((Player)Sprites["player"]).SetStartPosition();
+            ((Dragon)Sprites["dragon"]).SetStartPosition();
         }
 
 
@@ -146,7 +149,7 @@ namespace Desktop
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            foreach (var source in Sprites)
+            foreach (var source in Sprites.Values)
             {
                 source.Update(gameTime, source);
             }
@@ -163,7 +166,7 @@ namespace Desktop
 
             spriteBatch.Begin();
 
-            foreach (var sprite in Sprites)
+            foreach (var sprite in Sprites.Values)
                 sprite.Draw(spriteBatch);
 
             spriteBatch.End();
