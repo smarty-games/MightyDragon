@@ -159,9 +159,9 @@ namespace Desktop.Sprites
                     if (!pl.Collides() && (pl.CanMove()))
                     {
                         Position += Velocity;
-                        int mX = (int)(Position.Y / StepY);
-                        int mY = (int)(Position.X / StepX);
-                        _game.PlayerMatrix[mX][mY] = 1;
+                        int line = (int)(Position.Y / StepY);
+                        int col = (int)(Position.X / StepX);
+                        _game.GroundMap[line][col] = (int)General.Legend.Path;
                     }
                 }
             }
@@ -170,7 +170,7 @@ namespace Desktop.Sprites
         /// <summary>
         /// check for colision with destination
         /// </summary>
-        /// <param name="destinationType">the destination sprite which the collision is computed for</param>
+        /// <param name="destinationType">the destination sprite the collision is check with</param>
         /// <returns></returns>
         protected bool CollisionWith(Sprite destination)
         {

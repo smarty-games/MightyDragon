@@ -68,6 +68,8 @@
     <Compile Include="Sprites\Sprite.cs" />
     <Compile Include="General.cs" />
     <Compile Include="Sprites\ScreenManager.cs" />
+    <Compile Include="Sprites\Terrain.cs" />
+    <Compile Include="Sprites\Character.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework">

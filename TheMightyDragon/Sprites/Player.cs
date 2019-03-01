@@ -16,7 +16,7 @@ namespace Desktop.Sprites
         public Player(Dictionary<string, Animation> animations, TheGame game) : base(animations, game)
         {
         }
-        public void SetStartPosition()
+        public void Init()
         {
             var rnd = new Random(31);
             StepX = 32;
@@ -38,7 +38,8 @@ namespace Desktop.Sprites
             int matrixY = Direction == General.eDirection.Right ?
                                          (int)((Position.X + (StepX + Velocity.X - 1)) / StepX) :
                                          (int)((Position.X + Velocity.X) / StepX);
-            if (_game.PlayerMatrix[matrixX][matrixY] == 1)
+            if ((_game.GroundMap[matrixX][matrixY] == (int)General.Legend.Path ||
+                _game.GroundMap[matrixX][matrixY] ==(int) General.Legend.Crater))
             {
                 return true;
             }

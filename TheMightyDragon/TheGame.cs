@@ -10,33 +10,36 @@ using System;
 namespace Desktop
 {
 
-    /// <summary>
-    /// This is the main type for your game.
+    /// <summary> 
+    /// -------------------------------------GAME IDEAS -----------------------------------------------------
+    ///         Closed terrains will grow into MOUTAINS (resized textures of a moutain)
+    /// -------------------------------------IMAGINE IF -----------------------------------------------------
     /// </summary>
     public class TheGame : Game
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        // 1 - is for player
-        // 2 - is for dragon
-        public int[][] PlayerMatrix = new int[15][] { new int[25] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-                new int[25] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
-                new int[25] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
-                new int[25] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
-                new int[25] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
-                new int[25] { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
-                new int[25] { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
-                new int[25] { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
-                new int[25] { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
-                new int[25] { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
-                new int[25] { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
-                new int[25] { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
-                new int[25] { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
-                new int[25] { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
-                new int[25] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
+         
+        public int[][] GroundMap = new int[General.TilesVertically][] { new int[General.TilesHorizontaly] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+                new int[General.TilesHorizontaly] { 1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1 },
+                new int[General.TilesHorizontaly] { 1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1 },
+                new int[General.TilesHorizontaly] { 1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1 },
+                new int[General.TilesHorizontaly] { 1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1 },
+                new int[General.TilesHorizontaly] { 1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1 },
+                new int[General.TilesHorizontaly] { 1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1 },
+                new int[General.TilesHorizontaly] { 1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1 },
+                new int[General.TilesHorizontaly] { 1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1 },
+                new int[General.TilesHorizontaly] { 1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1 },
+                new int[General.TilesHorizontaly] { 1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1 },
+                new int[General.TilesHorizontaly] { 1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1 },
+                new int[General.TilesHorizontaly] { 1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1 },
+                new int[General.TilesHorizontaly] { 1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1 },
+                new int[General.TilesHorizontaly] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
         };
-
+        // matrix copycat
+        public int[][] PlayerMap;
         public Dictionary<string, Sprite> Sprites;
+        private Texture2D Path;
 
 
         // 
@@ -98,7 +101,7 @@ namespace Desktop
                 { "AttackRight", new Animation(Content.Load<Texture2D>("Dragon/AttackRight"), 3, 0.2f) }
                 };
 
-            Sprites = new Dictionary<string,Sprite>()
+            Sprites = new Dictionary<string, Sprite>()
               {
                 {"player", new Player(playeraAnimations,this)
                 {
@@ -125,11 +128,13 @@ namespace Desktop
                   },
                   MoveType = General.eMoveType.ToColission,
                   Name = "dragon",
-                } },
+                }
+                }
             };
+            Path = Content.Load<Texture2D>("Terrain/Path");
+            ((Player)Sprites["player"]).Init();
+            ((Dragon)Sprites["dragon"]).Init();
 
-            ((Player)Sprites["player"]).SetStartPosition();
-            ((Dragon)Sprites["dragon"]).SetStartPosition();
         }
 
 
@@ -151,7 +156,7 @@ namespace Desktop
         {
             foreach (var source in Sprites.Values)
             {
-                source.Update(gameTime, source);
+                if (!(source is Terrain)) source.Update(gameTime, source);
             }
            base.Update(gameTime);
         }
@@ -165,13 +170,55 @@ namespace Desktop
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             spriteBatch.Begin();
-
-            foreach (var sprite in Sprites.Values)
-                sprite.Draw(spriteBatch);
-
+                DrawMap();
+                DrawCharacters();
             spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        private void DrawCharacters()
+        {
+            // than draw characters
+            foreach (Sprite sprite in Sprites.Values)
+            {
+                if (!(sprite is Terrain))
+                {
+                    sprite.Draw(spriteBatch);
+                }
+            }
+        }
+
+        protected void DrawMap()
+        {
+            // draw map first - Terrain
+            for (int line = 0; line < General.TilesVertically; line++)
+                for (int col = 0; col < General.TilesHorizontaly; col++)
+                {
+                    if (GroundMap[line][col] == 1)
+                    {
+
+                        string mapSpriteKey = "tile" + line.ToString() + col.ToString();
+                        Terrain mapSprite;
+                        // try to fetch an existing terrain sprite
+                        if (Sprites.ContainsKey(mapSpriteKey))
+                        {
+                            mapSprite = (Terrain)Sprites[mapSpriteKey];
+                        }
+
+                        else // create new sprite with terrain texture if not found for in GroundMap matrix
+                        {
+
+                            mapSprite = new Terrain(Path)
+                            {
+                                Position = new Vector2(col * General.TileSize, line * General.TileSize)
+                            };
+                            Sprites.Add(mapSpriteKey, mapSprite);
+                        }
+
+                        mapSprite.Draw(spriteBatch);
+                    }
+                }
         }
     }
 }

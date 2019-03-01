@@ -38,7 +38,7 @@ namespace Desktop.Sprites
             }
             
         }
-        public void SetStartPosition()
+        public void Init()
         {
             var rnd = new Random(31);
             StepX = 64;
