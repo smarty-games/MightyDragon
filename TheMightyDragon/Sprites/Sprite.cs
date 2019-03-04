@@ -105,6 +105,7 @@ namespace Desktop.Sprites
             Speed = 0f;
             Velocity = Vector2.Zero;
         }
+
         public virtual void Move()
         {
             if (Keyboard.GetState().IsKeyDown(Input.Up))
@@ -140,33 +141,35 @@ namespace Desktop.Sprites
         // update position only if collision and matrix positions are ok for the next move
         private void UpdatePosition()
         {
-            bool ok = true;
-            if (Position.X + Velocity.X < 0) ok = false;
-            if (Position.X + StepX + Velocity.X > (ScreenManager.Width/this.StepX) * this.StepX)
-            {
-                ok = false;
-            }
-            if (Position.Y + Velocity.Y < 0) ok = false;
-            if (Position.Y + StepY + Velocity.Y > (ScreenManager.Height/this.StepY) * this.StepY)
-            {
-                ok = false;
-            }
-            if (ok)
+            if (!OutOfScreen())
             {
                 if (this is Player)
                 {
                     Player pl = (Player)this;
-                    if (!pl.Collides() && (pl.CanMove()))
+                    Point current = new Point((int)(Position.Y / StepY), (int)(Position.X / StepX));
+                    Point next = new Point(0,0);
+
+                    if (!pl.Collides() && (pl.CanMove(out next)))
                     {
                         Position += Velocity;
-                        int line = (int)(Position.Y / StepY);
-                        int col = (int)(Position.X / StepX);
-                        _game.GroundMap[line][col] = (int)General.Legend.Path;
+                        if (_game.GroundMap[next.Y][next.X] != (int)General.Legend.PlayerPath // means that player moves in danger zone (Crater)
+                            && pl.TheAction == General.ePlayerAction.MoveOnGround) // our player gets bravely into the Crater
+                        {
+                            pl.TheAction = General.ePlayerAction.MoveInCrater;                     
+                        }
                     }
                 }
             }
         }
-        
+
+        private bool OutOfScreen()
+        {
+            return (Position.X + Velocity.X < 0) 
+            || (Position.X + StepX + Velocity.X > (ScreenManager.Width / this.StepX) * this.StepX)
+            || (Position.Y + Velocity.Y < 0)
+            || (Position.Y + StepY + Velocity.Y > (ScreenManager.Height / this.StepY) * this.StepY);
+        }
+
         /// <summary>
         /// check for colision with destination
         /// </summary>

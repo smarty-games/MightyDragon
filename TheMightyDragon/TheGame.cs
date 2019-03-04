@@ -19,7 +19,7 @@ namespace Desktop
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-         
+
         public int[][] GroundMap = new int[General.TilesVertically][] { new int[General.TilesHorizontaly] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
                 new int[General.TilesHorizontaly] { 1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1 },
                 new int[General.TilesHorizontaly] { 1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1 },
@@ -36,10 +36,11 @@ namespace Desktop
                 new int[General.TilesHorizontaly] { 1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1 },
                 new int[General.TilesHorizontaly] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
         };
-        // matrix copycat
-        public int[][] PlayerMap;
+        public const int CraterLeft = 299;
         public Dictionary<string, Sprite> Sprites;
-        private Texture2D Path;
+        private Texture2D _texturePath;
+        private Texture2D _textureCrater;
+        private Texture2D _textureMountain;
 
 
         // 
@@ -100,6 +101,9 @@ namespace Desktop
                 { "AttackLeft", new Animation(Content.Load<Texture2D>("Dragon/AttackLeft"), 3, 0.2f) },
                 { "AttackRight", new Animation(Content.Load<Texture2D>("Dragon/AttackRight"), 3, 0.2f) }
                 };
+            _texturePath = Content.Load<Texture2D>("Terrain/path");
+            _textureCrater = Content.Load<Texture2D>("Terrain/crater");
+            _textureMountain = Content.Load<Texture2D>("Terrain/mountain");
 
             Sprites = new Dictionary<string, Sprite>()
               {
@@ -128,10 +132,21 @@ namespace Desktop
                   },
                   MoveType = General.eMoveType.ToColission,
                   Name = "dragon",
-                }
+                } },
+                {"crater",
+                    new Terrain(_textureCrater){ }
+                },
+                {"path",
+                    new Terrain(_texturePath){ }
+                },
+                {"mountain",
+                    new Terrain(_textureMountain){ }
                 }
             };
-            Path = Content.Load<Texture2D>("Terrain/Path");
+
+
+
+
             ((Player)Sprites["player"]).Init();
             ((Dragon)Sprites["dragon"]).Init();
 
@@ -158,9 +173,9 @@ namespace Desktop
             {
                 if (!(source is Terrain)) source.Update(gameTime, source);
             }
-           base.Update(gameTime);
+            base.Update(gameTime);
         }
-   
+
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
@@ -170,8 +185,8 @@ namespace Desktop
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             spriteBatch.Begin();
-                DrawMap();
-                DrawCharacters();
+            DrawMap();
+            DrawCharacters();
             spriteBatch.End();
 
             base.Draw(gameTime);
@@ -192,33 +207,40 @@ namespace Desktop
         protected void DrawMap()
         {
             // draw map first - Terrain
+            // mountain background first
+            Terrain mountain = new Terrain(_textureMountain)
+            {
+                Position = Vector2.Zero
+            };
+            mountain.Draw(spriteBatch);
             for (int line = 0; line < General.TilesVertically; line++)
                 for (int col = 0; col < General.TilesHorizontaly; col++)
                 {
-                    if (GroundMap[line][col] == 1)
+
+                    Terrain mapSprite = getSprite(GroundMap[line][col]);
+                    // try to fetch an existing terrain sprite
+                    if (mapSprite != null && mapSprite.TerrainTexture != _textureMountain) // there is sprite to draw at matrix(line,col) position
                     {
-
-                        string mapSpriteKey = "tile" + line.ToString() + col.ToString();
-                        Terrain mapSprite;
-                        // try to fetch an existing terrain sprite
-                        if (Sprites.ContainsKey(mapSpriteKey))
-                        {
-                            mapSprite = (Terrain)Sprites[mapSpriteKey];
-                        }
-
-                        else // create new sprite with terrain texture if not found for in GroundMap matrix
-                        {
-
-                            mapSprite = new Terrain(Path)
-                            {
-                                Position = new Vector2(col * General.TileSize, line * General.TileSize)
-                            };
-                            Sprites.Add(mapSpriteKey, mapSprite);
-                        }
-
+                        mapSprite.Position = new Vector2(col * General.TileSize, line * General.TileSize);
                         mapSprite.Draw(spriteBatch);
                     }
                 }
         }
+
+        private Terrain getSprite(int mapCode)
+        {
+            Terrain terrain = null;
+            switch (mapCode)
+            {
+                case (int)General.Legend.Crater: { terrain = ((Terrain)Sprites["crater"]).Duplicate(); break; }
+                case (int)General.Legend.PlayerPath: { terrain = ((Terrain)Sprites["path"]).Duplicate(); break; }
+                case (int)General.Legend.Mountain: { terrain = (Terrain)Sprites["mountain"]; break; }
+                default: { break; }
+            }
+            return terrain;
+        }
+
+
     }
 }
+

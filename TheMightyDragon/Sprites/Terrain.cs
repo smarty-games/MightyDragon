@@ -23,6 +23,9 @@ namespace Desktop.Sprites
 
         }
 
-
+        internal Terrain Duplicate()
+        {
+            return new Terrain(TerrainTexture);
+        }
     }
 }
