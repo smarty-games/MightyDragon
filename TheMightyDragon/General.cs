@@ -24,8 +24,8 @@ namespace Desktop
             DragonPath = 3, // if PlayerMap[line,col] == 3 Player is vulnerable to Dragon attacks
             Mountain = 4,   // every time the Player surrounds a path in DragonPath that has one Eye(©), Player wins game points and disover the map underneath that shows him the way to the Princess
                             // one level leads to the next
-            Dragon = 6
-
+            Dragon = 6,
+            NoDragonPath = 7
         }
         public enum eDirection
         {

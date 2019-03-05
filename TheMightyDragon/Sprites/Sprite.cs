@@ -38,6 +38,7 @@ namespace Desktop.Sprites
             }
         }
         public string Name { get { return _playerName; } set { _playerName = value; } }
+
         public bool IsCollision = false;
         public int StepX;
         public int StepY;
@@ -137,32 +138,14 @@ namespace Desktop.Sprites
                 LastDirection = Direction;
             }
         }
-        
-        // update position only if collision and matrix positions are ok for the next move
-        private void UpdatePosition()
-        {
-            if (!OutOfScreen())
-            {
-                if (this is Player)
-                {
-                    Player pl = (Player)this;
-                    Point current = new Point((int)(Position.Y / StepY), (int)(Position.X / StepX));
-                    Point next = new Point(0,0);
 
-                    if (!pl.Collides() && (pl.CanMove(out next)))
-                    {
-                        Position += Velocity;
-                        if (_game.GroundMap[next.Y][next.X] != (int)General.Legend.PlayerPath // means that player moves in danger zone (Crater)
-                            && pl.TheAction == General.ePlayerAction.MoveOnGround) // our player gets bravely into the Crater
-                        {
-                            pl.TheAction = General.ePlayerAction.MoveInCrater;                     
-                        }
-                    }
-                }
-            }
+        // update position only if collision and matrix positions are ok for the next move
+        public virtual void UpdatePosition()
+        {
+                    
         }
 
-        private bool OutOfScreen()
+        public bool OutOfScreen()
         {
             return (Position.X + Velocity.X < 0) 
             || (Position.X + StepX + Velocity.X > (ScreenManager.Width / this.StepX) * this.StepX)
@@ -191,7 +174,6 @@ namespace Desktop.Sprites
             }
             else return false;
         }
-
 
         #endregion
 

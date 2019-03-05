@@ -41,6 +41,7 @@ namespace Desktop
         private Texture2D _texturePath;
         private Texture2D _textureCrater;
         private Texture2D _textureMountain;
+        private Texture2D _textureDragonPath;
 
 
         // 
@@ -104,6 +105,7 @@ namespace Desktop
             _texturePath = Content.Load<Texture2D>("Terrain/path");
             _textureCrater = Content.Load<Texture2D>("Terrain/crater");
             _textureMountain = Content.Load<Texture2D>("Terrain/mountain");
+            _textureDragonPath = Content.Load<Texture2D>("Terrain/dragonpath");
 
             Sprites = new Dictionary<string, Sprite>()
               {
@@ -141,6 +143,9 @@ namespace Desktop
                 },
                 {"mountain",
                     new Terrain(_textureMountain){ }
+                },
+                {"dragonpath",
+                    new Terrain(_textureDragonPath){ }
                 }
             };
 
@@ -194,10 +199,28 @@ namespace Desktop
 
         private void DrawCharacters()
         {
+           
             // than draw characters
             foreach (Sprite sprite in Sprites.Values)
             {
-                if (!(sprite is Terrain))
+                if (sprite is Player)
+                {
+                    // draw active dragon path first
+                    var activePath = ((Player)sprite).GetActivePath();
+
+                    if (activePath != null)
+                    {
+                        foreach (Point p in activePath)
+                        {
+                            Terrain activeTerrain = getSprite((int)General.Legend.DragonPath);
+                            activeTerrain.Position = new Vector2(p.X * General.TileSize, p.Y * General.TileSize);
+
+                            activeTerrain.Draw(spriteBatch);
+                        }
+                    }
+                    sprite.Draw(spriteBatch);
+                }
+                else if (sprite is Dragon)
                 {
                     sprite.Draw(spriteBatch);
                 }
@@ -216,15 +239,17 @@ namespace Desktop
             for (int line = 0; line < General.TilesVertically; line++)
                 for (int col = 0; col < General.TilesHorizontaly; col++)
                 {
-
+                    
                     Terrain mapSprite = getSprite(GroundMap[line][col]);
                     // try to fetch an existing terrain sprite
                     if (mapSprite != null && mapSprite.TerrainTexture != _textureMountain) // there is sprite to draw at matrix(line,col) position
                     {
                         mapSprite.Position = new Vector2(col * General.TileSize, line * General.TileSize);
+
                         mapSprite.Draw(spriteBatch);
                     }
                 }
+
         }
 
         private Terrain getSprite(int mapCode)
@@ -235,6 +260,7 @@ namespace Desktop
                 case (int)General.Legend.Crater: { terrain = ((Terrain)Sprites["crater"]).Duplicate(); break; }
                 case (int)General.Legend.PlayerPath: { terrain = ((Terrain)Sprites["path"]).Duplicate(); break; }
                 case (int)General.Legend.Mountain: { terrain = (Terrain)Sprites["mountain"]; break; }
+                case (int)General.Legend.DragonPath: { terrain = ((Terrain)Sprites["dragonpath"]).Duplicate(); break; }
                 default: { break; }
             }
             return terrain;

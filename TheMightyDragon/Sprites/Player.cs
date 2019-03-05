@@ -13,7 +13,7 @@ namespace Desktop.Sprites
         public const int HealthMax = 20; // 100 points of health
         public int Health = HealthMax;
         public General.ePlayerAction TheAction;
-       
+        public List<Point> ActivePath; // last walked dragon path 
         private int[][] _map; // this is copied from GroundMap in the moment the Player moves into Danger area (2)
 
         public Player(Dictionary<string, Animation> animations, TheGame game) : base(animations, game)
@@ -86,6 +86,26 @@ namespace Desktop.Sprites
             base.Stop();
 
         }
+        public override void UpdatePosition()
+        {
+            if (!OutOfScreen())
+            {
+
+                base.UpdatePosition();
+                Point current = new Point((int)(Position.Y / StepY), (int)(Position.X / StepX));
+                Point next = new Point(0, 0);
+
+                if (!Collides() && (CanMove(out next)))
+                {
+                    Position += Velocity;
+                    if (_game.GroundMap[next.Y][next.X] != (int)General.Legend.PlayerPath // means that player moves in danger zone (Crater)
+                        && TheAction == General.ePlayerAction.MoveOnGround) // our player gets bravely into the Crater
+                    {
+                        TheAction = General.ePlayerAction.MoveInCrater;
+                    }
+                }
+            }
+        }
         private void UpdateMap(int line, int col)
         {
 
@@ -132,20 +152,20 @@ namespace Desktop.Sprites
                 // check if a Dragon Eye was made (loop in crater)
                 if (DragonEyeCompleted())
                 {
-                    ShowMatrix();
+//                    ShowMatrix();
 
                     // update Player points
                 }
             
                 this.TheAction = General.ePlayerAction.MoveOnGround;
-                    InitMapWithGameMap();
+                InitMapWithGameMap();
                 }
             
         }
 
         public void SetMapSideMark(int line, int col, General.Legend mark)
         {
-            if (line > 0 && line < General.TilesVertically && col>0 && col<General.TilesHorizontaly)
+          if (line > 0 && line < General.TilesVertically && col>0 && col<General.TilesHorizontaly && _map[line][col] != (int)General.Legend.PlayerPath) 
             {
                 int pathSide = _map[line][col];
                 _map[line][col] =   (pathSide != (int)General.Legend.PlayerPath && pathSide != (int)General.Legend.DragonPath) ?
@@ -162,9 +182,10 @@ namespace Desktop.Sprites
             if (winZone == General.Legend.LeftMark || winZone == General.Legend.RightMark)
             {
                 CreateMountain(winZone);
+
                 return true;
             }
-
+            ActivePath = null;
             return false;
         }
 
@@ -176,6 +197,7 @@ namespace Desktop.Sprites
                 _map[i] = new int[General.TilesHorizontaly];
                 _game.GroundMap[i].CopyTo(_map[i],0);
             }
+            ActivePath = null;
         }
 
         /// <summary>
@@ -195,7 +217,7 @@ namespace Desktop.Sprites
                     return General.Legend.LeftMark;
                 else return General.Legend.RightMark;
             }
-            else return General.Legend.PlayerPath; // no smaller map mark found
+            else return General.Legend.NoDragonPath; // no smaller map mark found
         }
 
 
@@ -231,10 +253,9 @@ namespace Desktop.Sprites
                             for (int j = -1; j <= 1; j++)
                                 if (_map[line + i][col + j] == (int)General.Legend.DragonPath)
                                 {
+
                                     _map[line + i][col + j] = (int)General.Legend.PlayerPath;
                                     _game.GroundMap[line + i][col + j] = (int)General.Legend.PlayerPath;
-
-
                                 }
                     }
                 }
@@ -283,6 +304,19 @@ namespace Desktop.Sprites
                
             } while (exists);
             return marks;
+        }
+        public List<Point> GetActivePath()
+        {
+            var activePath = new List<Point>();
+            for (int line = 0; line < General.TilesVertically; line++)
+                for (int col = 0; col < General.TilesHorizontaly; col++)
+                {
+                    if (_map[line][col] == (int)General.Legend.DragonPath)
+                    {
+                        activePath.Add(new Point(col, line));
+                    }
+                }
+            return activePath;
         }
     }
 }

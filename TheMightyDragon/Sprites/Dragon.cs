@@ -40,13 +40,66 @@ namespace Desktop.Sprites
         }
         public void Init()
         {
-            var rnd = new Random(31);
+            var rnd = new Random(41);
             StepX = 64;
             StepY = 64;
-            Position = new Vector2(rnd.Next(1, 14) * General.TileSize, rnd.Next(1, 24) * General.TileSize);
+            Position = new Vector2(2 * rnd.Next(5, 9) * General.TileSize, 2* rnd.Next(3, 6) * General.TileSize);
             Velocity = Vector2.Zero;
             Direction = General.eDirection.Idle;
             LastDirection = General.eDirection.Down;
+        }
+        public bool CanMove(out Point next)
+        {
+            int line = Direction == General.eDirection.Down ?
+                                        (int)((Position.Y + (StepY + Velocity.Y - 1)) / StepX)
+                                        : (int)((Position.Y + Velocity.Y) / StepY);
+            int col = Direction == General.eDirection.Right ?
+                                        (int)((Position.X + (StepX + Velocity.X - 1)) / StepX)
+                                        : (int)((Position.X + Velocity.X) / StepX);
+            next = new Point(col, line);
+            if (_game.GroundMap[line][col] == (int)General.Legend.Crater)
+            {
+                return true;
+            }
+            else return false;
+        }
+        public bool Collides()
+        {
+            foreach (var destination in _game.Sprites.Values)
+            {
+                if (destination is Player)
+                {
+                    if (this.CollisionWith(destination))
+                    {
+                        this.IsCollision = true;
+                        destination.IsCollision = true;
+                        this.Stop();
+                        destination.Stop();
+                        return this.IsCollision;
+                    }
+                    else
+                    {
+                        this.IsCollision = false;
+                        destination.IsCollision = false;
+                    }
+                }
+            }
+            return this.IsCollision;
+        }
+        public override void UpdatePosition()
+        {
+            if (!OutOfScreen())
+            {
+
+                base.UpdatePosition();
+                Point current = new Point((int)(Position.Y / StepY), (int)(Position.X / StepX));
+                Point next = new Point(0, 0);
+
+                if (!Collides() && (CanMove(out next)))
+                {
+                    Position += Velocity;
+                }
+            }
         }
 
     }
