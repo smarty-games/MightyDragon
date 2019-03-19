@@ -12,7 +12,8 @@ namespace Desktop
 
     /// <summary> 
     /// -------------------------------------GAME IDEAS -----------------------------------------------------
-    ///         Closed terrains will grow into MOUTAINS (resized textures of a moutain)
+    ///         closed terrains will grow into MOUTAINS (resized textures of a moutain)
+    ///         let dragon attack using optim path to player. meanwhile 2nd player can take control of dragon using arrow keys
     /// -------------------------------------IMAGINE IF -----------------------------------------------------
     /// </summary>
     public class TheGame : Game
@@ -266,6 +267,7 @@ namespace Desktop
             return terrain;
         }
 
+       
 
     }
 }

@@ -8,13 +8,133 @@ using System.Threading.Tasks;
 
 namespace Desktop.Sprites
 {
+    public class PathToAttack
+    {
+        public List<Point> Path;
+        public int Length;
+        public int[][] map;
+        Point player;
+
+        public PathToAttack(Point dragon, Point player, int[][] groundMap)
+        {
+            this.player = player;
+            InitMapWithGameMap(groundMap);
+            Path = null; // no path to attack was found
+            FindPathToAttackPoint(dragon);  // 100 init value for dragon path step to not override values for map Legend values
+
+        }
+        protected void InitMapWithGameMap(int[][] groundMap)
+        {
+            map = new int[General.TilesVertically][];
+            for (int i = 0; i < General.TilesVertically; i++)
+            {
+                map[i] = new int[General.TilesHorizontaly];
+                groundMap[i].CopyTo(map[i], 0);
+            }
+        }
+        private void FindPathToAttackPoint(Point dragon)
+        {
+            int marks = 1;
+            int step = 100;
+            map[dragon.X][dragon.Y] = step;
+            while (marks > 0)
+            {
+                step += 1;
+                marks = 0;
+
+                // if dragon trass pass player dragonpath than slow the player
+                for (int line = 1; line <= General.TilesVertically - 2; line++)
+                    for (int col = 1; col <= General.TilesHorizontaly - 2; col++)
+                    {
+                        if (map[line][col] == step - 1)
+
+                        {
+                            for (int i = -1; i <= 1; i++)
+                                for (int j = -1; j <= 1; j++)
+                                    if (Math.Abs(i) + Math.Abs(j) == 1)
+                                    {
+                                        Point next = new Point(line + i, col + j);
+                                        if (map[next.X][next.Y] == (int)General.Legend.Crater)
+                                        {
+                                            marks++;
+                                            map[next.X][next.Y] = step;
+                                            if (IsCollision(next))
+                                            {
+                                                ShowMatrix(map);
+                                                    SetPathToAttackPoint(next, step);
+                                                    return;
+                                            }
+                                        }
+
+                                    }
+                        }
+                    }
+            }
+        }
+
+        private void SetPathToAttackPoint(Point dragon,int step)
+        {
+            if (map[dragon.X][dragon.Y] == 100)
+            {
+                Path = new List<Point>() { dragon };
+            }
+            else
+            {
+                for (int i = -1; i <= 1; i++)
+                    for (int j = -1; j <= 1; j++)
+                    {
+                        if (Math.Abs(i) + Math.Abs(j) == 1 && Path == null)
+                        {
+                            if (map[dragon.X + i][dragon.Y + j] == step - 1)
+                            {
+                                SetPathToAttackPoint(new Point(dragon.X + i, dragon.Y + j), step - 1);
+                                Path.Add(dragon);
+                            }
+                        }
+                    }
+            }
+        }
+
+        private bool IsCollision(Point dragon)
+        {
+            for (int i = -1; i <= 1; i++)
+                for (int j = -1; j <= 1; j++)
+                    if (player == new Point(dragon.X + j, dragon.Y + i))
+                    {
+                        return true;
+                    }
+            return false;
+        }
+
+        protected void ShowMatrix(int[][] map)
+        {
+            Console.Clear();
+            for (int line = 0; line < General.TilesVertically; line++)
+            {
+                for (int col = 0; col < General.TilesHorizontaly; col++)
+                {
+                    string playerMatrixCell = "";
+                        playerMatrixCell = map[line][col].ToString() + "|";
+                    Console.Write(String.Format("{0,8}", playerMatrixCell ));
+
+                }
+                Console.WriteLine();
+            }
+            Console.WriteLine("--------------------------------------------------------------");
+        }
+    }
+
     public class Dragon:Sprite
     {
+        // private fields
+        double LastAttackTime = 0;  // in seconds
+        Point current = new Point(0,0);
         // public fields
         public const int HealthMax = 100; // 100 points of health
         public int Health = HealthMax;
-        // private fields
-        private double LastAttackTime = 0;  // in seconds
+
+        public PathToAttack pathToAttack;
+
         public Dragon(Dictionary<string, Animation> animations, TheGame game):base(animations,game)
         { 
         }
@@ -41,23 +161,35 @@ namespace Desktop.Sprites
         public void Init()
         {
             var rnd = new Random(41);
-            StepX = 64;
-            StepY = 64;
-            Position = new Vector2(2 * rnd.Next(5, 9) * General.TileSize, 2* rnd.Next(3, 6) * General.TileSize);
+            StepX = 32;
+            StepY = 32;
+            Position = new Vector2(StepY, StepX);//new Vector2(2 * rnd.Next(5, 9) * General.TileSize, 2* rnd.Next(3, 6) * General.TileSize);
             Velocity = Vector2.Zero;
             Direction = General.eDirection.Idle;
             LastDirection = General.eDirection.Down;
         }
-        public bool CanMove(out Point next)
+        public bool CanMove(Point next)
         {
+            Direction = General.eDirection.Idle;
+            if (next.X - current.X != 0) 
+            Direction = next.X < current.X ? General.eDirection.Up:
+                                             General.eDirection.Down;
+            if (next.Y - current.Y != 0)
+            Direction = next.Y < current.Y ? General.eDirection.Left:
+                                             General.eDirection.Right;
+            if (Direction == General.eDirection.Idle)
+            {
+                return false;
+            }
+
             int line = Direction == General.eDirection.Down ?
-                                        (int)((Position.Y + (StepY + Velocity.Y - 1)) / StepX)
-                                        : (int)((Position.Y + Velocity.Y) / StepY);
+                                      (int)((Position.Y + (StepY + Velocity.Y - 1)) / StepX)
+                                      : (int)((Position.Y + Velocity.Y) / StepY);
             int col = Direction == General.eDirection.Right ?
                                         (int)((Position.X + (StepX + Velocity.X - 1)) / StepX)
                                         : (int)((Position.X + Velocity.X) / StepX);
-            next = new Point(col, line);
-            if (_game.GroundMap[line][col] == (int)General.Legend.Crater)
+
+            if (pathToAttack.map[line][col] >= 100)
             {
                 return true;
             }
@@ -65,7 +197,7 @@ namespace Desktop.Sprites
         }
         public bool Collides()
         {
-            foreach (var destination in _game.Sprites.Values)
+            foreach (var destination in TMD.Sprites.Values)
             {
                 if (destination is Player)
                 {
@@ -86,21 +218,74 @@ namespace Desktop.Sprites
             }
             return this.IsCollision;
         }
-        public override void UpdatePosition()
+        public override void Move()
         {
-            if (!OutOfScreen())
+            base.Move();
+
+            Velocity = Vector2.Zero;
+            if (Direction == General.eDirection.Up)
             {
-
-                base.UpdatePosition();
-                Point current = new Point((int)(Position.Y / StepY), (int)(Position.X / StepX));
-                Point next = new Point(0, 0);
-
-                if (!Collides() && (CanMove(out next)))
-                {
-                    Position += Velocity;
-                }
+                Speed = General.GameSpeed;
+                Velocity.Y = -Speed;
+            }
+            if (Direction == General.eDirection.Down)
+            {
+                Speed = General.GameSpeed;
+                Velocity.Y = Speed;
+            }
+            if (Direction == General.eDirection.Left)
+            {
+                Speed = General.GameSpeed;
+                Velocity.X = -Speed;
+            }
+            if (Direction == General.eDirection.Right)
+            {
+                Speed = General.GameSpeed;
+                Velocity.X = Speed;
             }
         }
+
+        public override void UpdatePosition()
+        {
+            base.UpdatePosition();
+            int dragonLine = (int)(Position.Y / General.TileSize);
+            int dragonCol = (int)(Position.X / General.TileSize);
+            int playerLine = (int)(TMD.Sprites["player"].Position.Y / General.TileSize);
+            int playerCol = (int)(TMD.Sprites["player"].Position.X / General.TileSize);
+            current = new Point(dragonLine, dragonCol);
+
+            if (Direction == General.eDirection.Idle)
+            {
+                // find next path
+                if (_gameTime.TotalGameTime.Seconds % 3 == 1)
+                {
+
+
+                    pathToAttack = new PathToAttack(current, new Point(playerLine, playerCol), TMD.GroundMap);
+                    ShowMatrix(pathToAttack.map);
+                }
+                  
+            }
+            if (pathToAttack != null) {
+                if (pathToAttack.Path == null)
+                {
+
+                }  // dragon is free of player area
+               
+                else 
+                if (!Collides() &&
+                    pathToAttack.Path.Count > 1 &&
+                    CanMove(pathToAttack.Path[1]))
+                {
+                        Move();
+                        Position += Velocity;
+                }
+            }
+
+        }
+
+
+        // if path of eliberation was hit = dragon stands on moutain than release the dragon to the mountain animation
 
     }
 }

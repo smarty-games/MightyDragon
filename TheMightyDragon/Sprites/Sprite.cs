@@ -18,12 +18,16 @@ namespace Desktop.Sprites
         protected Dictionary<string, Animation> _animations;
         protected Vector2 _position;
         // keep reference to game for accesing properties
-        protected TheGame _game;
+
         protected Texture2D _texture;
         protected GameTime _gameTime;
         protected string _playerName;
+        public TheGame TMD;
+        public int[][] Map; // this is copied from GroundMap in the moment the Player moves into Danger area (2)
+
         #endregion
         #region Properties
+
 
         public Input Input;
         public Vector2 Position
@@ -56,6 +60,7 @@ namespace Desktop.Sprites
             else if (_animationManager != null)
                 _animationManager.Draw(spriteBatch);
             else throw new Exception("This ain't right..!");
+
         }
         protected virtual void SetAnimations()
         {
@@ -73,7 +78,8 @@ namespace Desktop.Sprites
             _animations = animations;
             var animation = _animations.First().Value;
             _animationManager = new AnimationManager(animation);
-            _game = game;
+            TMD = game;
+
             
         }
         public Sprite(Texture2D texture)
@@ -109,34 +115,37 @@ namespace Desktop.Sprites
 
         public virtual void Move()
         {
-            if (Keyboard.GetState().IsKeyDown(Input.Up))
-            {
-                Speed = General.GameSpeed;
-                Velocity.Y = -Speed;
-                Direction = General.eDirection.Up;
-                LastDirection = Direction;
-            }
-            else if (Keyboard.GetState().IsKeyDown(Input.Down))
-            {
-                Speed = General.GameSpeed;
-                Velocity.Y = Speed;
-                Direction = General.eDirection.Down;
-                LastDirection = Direction;
-            }
-            else if (Keyboard.GetState().IsKeyDown(Input.Left))
-            {
-                Speed = General.GameSpeed;
-                Velocity.X = -Speed;
-                Direction = General.eDirection.Left;
-                LastDirection = Direction;
-            }
-            else if (Keyboard.GetState().IsKeyDown(Input.Right))
-            {
-                Speed = General.GameSpeed;
-                Velocity.X = Speed;
-                Direction = General.eDirection.Right;
-                LastDirection = Direction;
-            }
+
+                if (Keyboard.GetState().IsKeyDown(Input.Up))
+                {
+                    Speed = General.GameSpeed;
+                    Velocity.Y = -Speed;
+                    Direction = General.eDirection.Up;
+                    LastDirection = Direction;
+                }
+                else if (Keyboard.GetState().IsKeyDown(Input.Down))
+                {
+                    Speed = General.GameSpeed;
+                    Velocity.Y = Speed;
+                    Direction = General.eDirection.Down;
+                    LastDirection = Direction;
+                }
+                else if (Keyboard.GetState().IsKeyDown(Input.Left))
+                {
+                    Speed = General.GameSpeed;
+                    Velocity.X = -Speed;
+                    Direction = General.eDirection.Left;
+                    LastDirection = Direction;
+                }
+                else if (Keyboard.GetState().IsKeyDown(Input.Right))
+                {
+                    Speed = General.GameSpeed;
+                    Velocity.X = Speed;
+                    Direction = General.eDirection.Right;
+                    LastDirection = Direction;
+                }
+            
+          
         }
 
         // update position only if collision and matrix positions are ok for the next move
@@ -148,9 +157,9 @@ namespace Desktop.Sprites
         public bool OutOfScreen()
         {
             return (Position.X + Velocity.X < 0) 
-            || (Position.X + StepX + Velocity.X > (ScreenManager.Width / this.StepX) * this.StepX)
+            || (Position.X + General.TileSize + Velocity.X > (ScreenManager.Width / General.TileSize) * General.TileSize)
             || (Position.Y + Velocity.Y < 0)
-            || (Position.Y + StepY + Velocity.Y > (ScreenManager.Height / this.StepY) * this.StepY);
+            || (Position.Y + General.TileSize + Velocity.Y > (ScreenManager.Height / General.TileSize) * General.TileSize);
         }
 
         /// <summary>
@@ -174,6 +183,25 @@ namespace Desktop.Sprites
             }
             else return false;
         }
+
+        protected void ShowMatrix(int[][] map)
+        {
+            Console.Clear();
+            for (int line = 0; line < General.TilesVertically; line++)
+            {
+                for (int col = 0; col < General.TilesHorizontaly; col++)
+                {
+                    string playerMatrixCell = "";
+                    if (map[line][col] != TMD.GroundMap[line][col])
+                        playerMatrixCell = map[line][col].ToString() + "|";
+                    Console.Write(String.Format("{0,8}", playerMatrixCell + TMD.GroundMap[line][col].ToString()));
+
+                }
+                Console.WriteLine();
+            }
+            Console.WriteLine("--------------------------------------------------------------");
+        }
+
 
         #endregion
 

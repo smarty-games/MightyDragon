@@ -14,8 +14,7 @@ namespace Desktop.Sprites
         public int Health = HealthMax;
         public General.ePlayerAction TheAction;
         public List<Point> ActivePath; // last walked dragon path 
-        private int[][] _map; // this is copied from GroundMap in the moment the Player moves into Danger area (2)
-
+       
         public Player(Dictionary<string, Animation> animations, TheGame game) : base(animations, game)
         {
         }
@@ -24,7 +23,7 @@ namespace Desktop.Sprites
             var rnd = new Random(31);
             StepX = 32;
             StepY = 32;
-            Position = Vector2.Zero;
+            Position = new Vector2(128,0);
             Velocity = Vector2.Zero;
             Direction = General.eDirection.Idle;
             LastDirection = General.eDirection.Down;
@@ -45,7 +44,7 @@ namespace Desktop.Sprites
                                         (int)((Position.X + (StepX + Velocity.X - 1)) / StepX)
                                         : (int)((Position.X + Velocity.X) / StepX);
             next = new Point(col, line);
-            if (_game.GroundMap[line][col] != (int)General.Legend.Mountain)
+            if (TMD.GroundMap[line][col] != (int)General.Legend.Mountain)
             {
                 return true;
             }
@@ -53,7 +52,7 @@ namespace Desktop.Sprites
         }
         public bool Collides()
         {
-            foreach (var destination in _game.Sprites.Values)
+            foreach (var destination in TMD.Sprites.Values)
             {
                 if (destination is Dragon)
                 {
@@ -98,7 +97,7 @@ namespace Desktop.Sprites
                 if (!Collides() && (CanMove(out next)))
                 {
                     Position += Velocity;
-                    if (_game.GroundMap[next.Y][next.X] != (int)General.Legend.PlayerPath // means that player moves in danger zone (Crater)
+                    if (TMD.GroundMap[next.Y][next.X] != (int)General.Legend.PlayerPath // means that player moves in danger zone (Crater)
                         && TheAction == General.ePlayerAction.MoveOnGround) // our player gets bravely into the Crater
                     {
                         TheAction = General.ePlayerAction.MoveInCrater;
@@ -109,9 +108,9 @@ namespace Desktop.Sprites
         private void UpdateMap(int line, int col)
         {
 
-            if (_map[line][col] != (int)General.Legend.PlayerPath)
+            if (Map[line][col] != (int)General.Legend.PlayerPath)
             {
-                _map[line][col] = (int)General.Legend.DragonPath;
+                Map[line][col] = (int)General.Legend.DragonPath;
             }
             // set Crater (2) on Player path. Here, Action for player should be MoveOnCrater already
 
@@ -146,7 +145,7 @@ namespace Desktop.Sprites
                             break;
                         }
                 }
-                if (_map[line][col] == (int)General.Legend.PlayerPath && this.TheAction == General.ePlayerAction.MoveInCrater) 
+                if (Map[line][col] == (int)General.Legend.PlayerPath && this.TheAction == General.ePlayerAction.MoveInCrater) 
                 // it reached the Path
                 {
                 // check if a Dragon Eye was made (loop in crater)
@@ -165,10 +164,10 @@ namespace Desktop.Sprites
 
         public void SetMapSideMark(int line, int col, General.Legend mark)
         {
-          if (line > 0 && line < General.TilesVertically && col>0 && col<General.TilesHorizontaly && _map[line][col] != (int)General.Legend.PlayerPath) 
+          if (line > 0 && line < General.TilesVertically && col>0 && col<General.TilesHorizontaly && Map[line][col] != (int)General.Legend.PlayerPath) 
             {
-                int pathSide = _map[line][col];
-                _map[line][col] =   (pathSide != (int)General.Legend.PlayerPath && pathSide != (int)General.Legend.DragonPath) ?
+                int pathSide = Map[line][col];
+                Map[line][col] =   (pathSide != (int)General.Legend.PlayerPath && pathSide != (int)General.Legend.DragonPath) ?
                                     (int)mark 
                                     : pathSide;
             }
@@ -189,15 +188,16 @@ namespace Desktop.Sprites
             return false;
         }
 
-        internal void InitMapWithGameMap()
+        protected  void InitMapWithGameMap()
         {
-            _map = new int[General.TilesVertically][];
+            Map = new int[General.TilesVertically][];
             for (int i = 0; i < General.TilesVertically; i++)
             {
-                _map[i] = new int[General.TilesHorizontaly];
-                _game.GroundMap[i].CopyTo(_map[i],0);
+                Map[i] = new int[General.TilesHorizontaly];
+                TMD.GroundMap[i].CopyTo(Map[i], 0);
             }
             ActivePath = null;
+            
         }
 
         /// <summary>
@@ -221,23 +221,7 @@ namespace Desktop.Sprites
         }
 
 
-        private void ShowMatrix()
-        {
-            Console.Clear();
-            for (int line = 0; line < General.TilesVertically; line++)
-            {
-                for (int col = 0; col < General.TilesHorizontaly; col++)
-                {
-                    string playerMatrixCell = "";
-                    if (_map[line][col] != _game.GroundMap[line][col])
-                    playerMatrixCell = _map[line][col].ToString()+"|";
-                    Console.Write(String.Format("{0,8}", playerMatrixCell + _game.GroundMap[line][col].ToString()));
 
-                }
-                Console.WriteLine();
-            }
-            Console.WriteLine("--------------------------------------------------------------");
-        }
 
         private void CreateMountain(General.Legend mark)
         {
@@ -245,17 +229,17 @@ namespace Desktop.Sprites
             {
                 for (int col = 0; col < General.TilesHorizontaly; col++)
                 {
-                    if (_map[line][col] == (int)mark * 100)
+                    if (Map[line][col] == (int)mark * 100)
                     {
-                        _map[line][col] = (int)General.Legend.Mountain;
-                        _game.GroundMap[line][col] = (int)General.Legend.Mountain;
+                        Map[line][col] = (int)General.Legend.Mountain;
+                        TMD.GroundMap[line][col] = (int)General.Legend.Mountain;
                         for (int i = -1; i <= 1; i++)
                             for (int j = -1; j <= 1; j++)
-                                if (_map[line + i][col + j] == (int)General.Legend.DragonPath)
+                                if (Map[line + i][col + j] == (int)General.Legend.DragonPath)
                                 {
 
-                                    _map[line + i][col + j] = (int)General.Legend.PlayerPath;
-                                    _game.GroundMap[line + i][col + j] = (int)General.Legend.PlayerPath;
+                                    Map[line + i][col + j] = (int)General.Legend.PlayerPath;
+                                    TMD.GroundMap[line + i][col + j] = (int)General.Legend.PlayerPath;
                                 }
                     }
                 }
@@ -264,11 +248,11 @@ namespace Desktop.Sprites
 
         private int FillMapForMark(int line, int col, General.Legend mark)
         {
-            if (_map[line][col] == (int)General.Legend.PlayerPath || _map[line][col] == (int)General.Legend.DragonPath)
+            if (Map[line][col] == (int)General.Legend.PlayerPath || Map[line][col] == (int)General.Legend.DragonPath)
             {
                 return 0;
             }
-            _map[line][col] = 100 * (int)mark;  // mark map with mark int value
+            Map[line][col] = 100 * (int)mark;  // mark map with mark int value
            
             return 1 + FillMapForMark(line - 1, col, mark)   
                      + FillMapForMark(line, col + 1, mark)
@@ -287,17 +271,17 @@ namespace Desktop.Sprites
                 for (int line = 0; line < General.TilesVertically; line++)
                     for (int col = 0; col < General.TilesHorizontaly; col++)
                     {
-                        if (_map[line][col] == (int)mark)
+                        if (Map[line][col] == (int)mark)
                         {
                             exists = true;
                             ++marks;
-                            _map[line][col] = (int)mark * 100; // cancel mark counting for next iteration
+                            Map[line][col] = (int)mark * 100; // cancel mark counting for next iteration
                             // fill neighbour marks 
                             for (int i = -1; i <= 1; i++)
                                 for (int j = -1; j <= 1; j++)
-                                    if (_map[line + i][col + j] == (int)General.Legend.Crater)
+                                    if (Map[line + i][col + j] == (int)General.Legend.Crater)
                                     {
-                                        _map[line + i][col + j] = (int)mark;  // mark map with mark int value
+                                        Map[line + i][col + j] = (int)mark;  // mark map with mark int value
                                     }
                         }
                     }
@@ -311,7 +295,7 @@ namespace Desktop.Sprites
             for (int line = 0; line < General.TilesVertically; line++)
                 for (int col = 0; col < General.TilesHorizontaly; col++)
                 {
-                    if (_map[line][col] == (int)General.Legend.DragonPath)
+                    if (Map[line][col] == (int)General.Legend.DragonPath)
                     {
                         activePath.Add(new Point(col, line));
                     }
