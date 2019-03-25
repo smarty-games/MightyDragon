@@ -41,24 +41,23 @@ namespace Desktop.Sprites
             switch (Direction)
             {
                 case General.eDirection.Up:
-                    next.Y -= 1;
+                    next.Y = from.Y - 1;
                     break;
                 case General.eDirection.Down:
-                    next.Y += 1;
+                    next.Y = from.Y + 1;
                     break;
                 case General.eDirection.Left:
-                    next.X -= 1;
+                    next.X = from.X - 1;
                     break;
                 case General.eDirection.Right:
-                    next.Y += 1;
+                    next.Y = from.Y + 1;
                     break;
+                case General.eDirection.Idle:
+                    return false;
+
                 default: break;
             }
 
-            if (Direction == General.eDirection.Idle)
-            {
-                return false;
-            }                          
             if (!(OutOfScreen(new Point(next.X,next.Y)))) 
             if (TMD.GroundMap[next.Y][next.X] != (int)General.Legend.Mountain)
             {
