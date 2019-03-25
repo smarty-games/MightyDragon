@@ -12,8 +12,9 @@ namespace Desktop.Sprites
     {
         public List<Point> Path;
         public int Length;
-        public int[][] map;
-        Point player;
+        public int[][] Map;
+
+        private Point player;
 
         public PathToAttack(Point dragon, Point player, int[][] groundMap)
         {
@@ -25,28 +26,27 @@ namespace Desktop.Sprites
         }
         protected void InitMapWithGameMap(int[][] groundMap)
         {
-            map = new int[General.TilesVertically][];
+            Map = new int[General.TilesVertically][];
             for (int i = 0; i < General.TilesVertically; i++)
             {
-                map[i] = new int[General.TilesHorizontaly];
-                groundMap[i].CopyTo(map[i], 0);
+                Map[i] = new int[General.TilesHorizontaly];
+                groundMap[i].CopyTo(Map[i], 0);
             }
         }
         private void FindPathToAttackPoint(Point dragon)
         {
             int marks = 1;
             int step = 100;
-            map[dragon.X][dragon.Y] = step;
+            Map[dragon.X][dragon.Y] = step;
             while (marks > 0)
             {
                 step += 1;
                 marks = 0;
-
-                // if dragon trass pass player dragonpath than slow the player
+                // TODO: if dragon trass pass player dragonpath than slow the player and substract health points
                 for (int line = 1; line <= General.TilesVertically - 2; line++)
                     for (int col = 1; col <= General.TilesHorizontaly - 2; col++)
                     {
-                        if (map[line][col] == step - 1)
+                        if (Map[line][col] == step - 1)
 
                         {
                             for (int i = -1; i <= 1; i++)
@@ -54,15 +54,15 @@ namespace Desktop.Sprites
                                     if (Math.Abs(i) + Math.Abs(j) == 1)
                                     {
                                         Point next = new Point(line + i, col + j);
-                                        if (map[next.X][next.Y] == (int)General.Legend.Crater)
+                                        if (Map[next.X][next.Y] == (int)General.Legend.Crater)
                                         {
                                             marks++;
-                                            map[next.X][next.Y] = step;
+                                            Map[next.X][next.Y] = step;
                                             if (IsCollision(next))
                                             {
-                                                ShowMatrix(map);
-                                                    SetPathToAttackPoint(next, step);
-                                                    return;
+                                                //ShowMatrix(Map);
+                                                SetPathToAttackPoint(next, step);
+                                                return;
                                             }
                                         }
 
@@ -74,7 +74,7 @@ namespace Desktop.Sprites
 
         private void SetPathToAttackPoint(Point dragon,int step)
         {
-            if (map[dragon.X][dragon.Y] == 100)
+            if (Map[dragon.X][dragon.Y] == 100)
             {
                 Path = new List<Point>() { dragon };
             }
@@ -85,7 +85,7 @@ namespace Desktop.Sprites
                     {
                         if (Math.Abs(i) + Math.Abs(j) == 1 && Path == null)
                         {
-                            if (map[dragon.X + i][dragon.Y + j] == step - 1)
+                            if (Map[dragon.X + i][dragon.Y + j] == step - 1)
                             {
                                 SetPathToAttackPoint(new Point(dragon.X + i, dragon.Y + j), step - 1);
                                 Path.Add(dragon);
@@ -166,7 +166,7 @@ namespace Desktop.Sprites
             Position = new Vector2(StepY, StepX);//new Vector2(2 * rnd.Next(5, 9) * General.TileSize, 2* rnd.Next(3, 6) * General.TileSize);
             Velocity = Vector2.Zero;
             Direction = General.eDirection.Idle;
-            LastDirection = General.eDirection.Down;
+            LastDirection = General.eDirection.Left;
         }
         public bool CanMove(Point next)
         {
@@ -189,7 +189,7 @@ namespace Desktop.Sprites
                                         (int)((Position.X + (StepX + Velocity.X - 1)) / StepX)
                                         : (int)((Position.X + Velocity.X) / StepX);
 
-            if (pathToAttack.map[line][col] >= 100)
+            if (pathToAttack.Map[line][col] >= 100)
             {
                 return true;
             }
@@ -203,20 +203,12 @@ namespace Desktop.Sprites
                 {
                     if (this.CollisionWith(destination))
                     {
-                        this.IsCollision = true;
-                        destination.IsCollision = true;
                         this.Stop();
-                        destination.Stop();
-                        return this.IsCollision;
-                    }
-                    else
-                    {
-                        this.IsCollision = false;
-                        destination.IsCollision = false;
+                        return true;
                     }
                 }
             }
-            return this.IsCollision;
+            return false;
         }
         public override void Move()
         {
@@ -259,21 +251,17 @@ namespace Desktop.Sprites
                 // find next path
                 if (_gameTime.TotalGameTime.Seconds % 3 == 1)
                 {
-
-
                     pathToAttack = new PathToAttack(current, new Point(playerLine, playerCol), TMD.GroundMap);
-                    ShowMatrix(pathToAttack.map);
+                    ShowMatrix(pathToAttack.Map);
                 }
                   
             }
             if (pathToAttack != null) {
                 if (pathToAttack.Path == null)
                 {
-
-                }  // dragon is free of player area
-               
-                else 
-                if (!Collides() &&
+                    // dragon is free of player area
+                }
+                else if (!Collides() &&
                     pathToAttack.Path.Count > 1 &&
                     CanMove(pathToAttack.Path[1]))
                 {

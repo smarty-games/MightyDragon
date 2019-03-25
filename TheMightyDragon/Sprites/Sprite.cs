@@ -23,7 +23,7 @@ namespace Desktop.Sprites
         protected GameTime _gameTime;
         protected string _playerName;
         public TheGame TMD;
-        public int[][] Map; // this is copied from GroundMap in the moment the Player moves into Danger area (2)
+        public int[][] Map; // this is copied from GroundMap in the moment the Player moves into the dangerous area (2) in other means, the player steps on dragon path
 
         #endregion
         #region Properties
@@ -43,7 +43,6 @@ namespace Desktop.Sprites
         }
         public string Name { get { return _playerName; } set { _playerName = value; } }
 
-        public bool IsCollision = false;
         public int StepX;
         public int StepY;
         public General.eMoveType MoveType;
@@ -151,7 +150,7 @@ namespace Desktop.Sprites
         // update position only if collision and matrix positions are ok for the next move
         public virtual void UpdatePosition()
         {
-                    
+            // position of characters on map are handled individually by UpdatePoisition() of character class
         }
 
         public bool OutOfScreen()

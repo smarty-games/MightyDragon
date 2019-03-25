@@ -25,7 +25,9 @@ namespace Desktop
             Mountain = 4,   // every time the Player surrounds a path in DragonPath that has one Eye(©), Player wins game points and disover the map underneath that shows him the way to the Princess
                             // one level leads to the next
             Dragon = 6,
-            NoDragonPath = 7
+            MountainPath = 44,
+            AreaLeftMark = -100,
+            AreaRightMark = -200
         }
         public enum eDirection
         {

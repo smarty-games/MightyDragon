@@ -28,27 +28,43 @@ namespace Desktop.Sprites
             Direction = General.eDirection.Idle;
             LastDirection = General.eDirection.Down;
             TheAction = General.ePlayerAction.MoveOnGround;
-            InitMapWithGameMap();
+            Map = InitMapWith(TMD.GroundMap);
 
         }
         /// <summary>
         /// check for matrix values (1) accepted for player next position
         /// </summary>
         /// <returns></returns>
-        public bool CanMove(out Point next)
+        public bool CanMove(Point from, out Point next)
         {
-            int line = Direction == General.eDirection.Down ?
-                                        (int)((Position.Y + (StepY + Velocity.Y - 1)) / StepX)
-                                        : (int)((Position.Y + Velocity.Y) / StepY);
-            int col = Direction == General.eDirection.Right ?
-                                        (int)((Position.X + (StepX + Velocity.X - 1)) / StepX)
-                                        : (int)((Position.X + Velocity.X) / StepX);
-            next = new Point(col, line);
-            if (TMD.GroundMap[line][col] != (int)General.Legend.Mountain)
+            next = new Point(from.Y,from.X);
+            switch (Direction)
+            {
+                case General.eDirection.Up:
+                    next.Y -= 1;
+                    break;
+                case General.eDirection.Down:
+                    next.Y += 1;
+                    break;
+                case General.eDirection.Left:
+                    next.X -= 1;
+                    break;
+                case General.eDirection.Right:
+                    next.Y += 1;
+                    break;
+                default: break;
+            }
+
+            if (Direction == General.eDirection.Idle)
+            {
+                return false;
+            }                          
+            if (!(OutOfScreen(new Point(next.X,next.Y)))) 
+            if (TMD.GroundMap[next.Y][next.X] != (int)General.Legend.Mountain)
             {
                 return true;
             }
-            else return false;
+            return false;
         }
         public bool Collides()
         {
@@ -58,43 +74,31 @@ namespace Desktop.Sprites
                 {
                     if (this.CollisionWith(destination))
                     {
-                        this.IsCollision = true;
-                        destination.IsCollision = true;
-                        this.Stop();
-                        destination.Stop();
-                        return this.IsCollision;
-                    }
-                    else
-                    {
-                        this.IsCollision = false;
-                        destination.IsCollision = false;
+                        return true;
                     }
                 }
             }
-            return this.IsCollision;
+            return false;
         }
 
         public override void Stop()
         {
 
-            if ((Position.Y % StepY) == 0 && (Position.X % StepX) == 0)
+            if (((int)Position.Y % StepY) == 0 && ((int)Position.X % StepX) == 0 && TheAction == General.ePlayerAction.MoveInCrater)
             {
-                UpdateMap((int)(Position.Y / StepY), (int)(Position.X / StepX));
-
+                UpdateMap((int)((int)Position.Y / StepY), (int)((int)Position.X / StepX));
             }
             base.Stop();
 
         }
         public override void UpdatePosition()
         {
-            if (!OutOfScreen())
-            {
 
                 base.UpdatePosition();
-                Point current = new Point((int)(Position.Y / StepY), (int)(Position.X / StepX));
+                Point current = new Point((int)(Position.X / StepX), (int)(Position.Y / StepY));
                 Point next = new Point(0, 0);
 
-                if (!Collides() && (CanMove(out next)))
+                if (CanMove(current,out next) && !OutOfScreen())
                 {
                     Position += Velocity;
                     if (TMD.GroundMap[next.Y][next.X] != (int)General.Legend.PlayerPath // means that player moves in danger zone (Crater)
@@ -103,7 +107,10 @@ namespace Desktop.Sprites
                         TheAction = General.ePlayerAction.MoveInCrater;
                     }
                 }
-            }
+                else
+                {
+                    Direction = General.eDirection.Idle;
+                }
         }
         private void UpdateMap(int line, int col)
         {
@@ -115,61 +122,64 @@ namespace Desktop.Sprites
             // set Crater (2) on Player path. Here, Action for player should be MoveOnCrater already
 
             switch (Direction)
-                {
-                    case General.eDirection.Up:
-                        {
-                            SetMapSideMark(line, col - 1, General.Legend.LeftMark);
-                            SetMapSideMark(line, col + 1, General.Legend.RightMark);
-                            break;
-                        }
-                    case General.eDirection.Down:
-                        {
-                            SetMapSideMark(line, col + 1, General.Legend.LeftMark);
-                            SetMapSideMark(line, col - 1, General.Legend.RightMark);
-                            break;
-                        }
-                    case General.eDirection.Left:
-                        {
-                            SetMapSideMark(line +1 , col, General.Legend.LeftMark);
-                            SetMapSideMark(line -1, col + 1, General.Legend.RightMark);
-                            break;
-                        }
-                    case General.eDirection.Right:
-                        {
-                            SetMapSideMark(line - 1, col, General.Legend.LeftMark);
-                            SetMapSideMark(line + 1, col, General.Legend.RightMark);
-                            break;
-                        }
-                    case General.eDirection.Idle:
-                        {
-                            break;
-                        }
-                }
-                if (Map[line][col] == (int)General.Legend.PlayerPath && this.TheAction == General.ePlayerAction.MoveInCrater) 
-                // it reached the Path
-                {
+            {
+                case General.eDirection.Up:
+                    {
+                        SetMapSideMark(line, col - 1, General.Legend.LeftMark);
+                        SetMapSideMark(line, col + 1, General.Legend.RightMark);
+                        break;
+                    }
+                case General.eDirection.Down:
+                    {
+                        SetMapSideMark(line, col + 1, General.Legend.LeftMark);
+                        SetMapSideMark(line, col - 1, General.Legend.RightMark);
+                        break;
+                    }
+                case General.eDirection.Left:
+                    {
+                        SetMapSideMark(line + 1, col, General.Legend.LeftMark);
+                        SetMapSideMark(line - 1, col, General.Legend.RightMark);
+                        break;
+                    }
+                case General.eDirection.Right:
+                    {
+                        SetMapSideMark(line - 1, col, General.Legend.LeftMark);
+                        SetMapSideMark(line + 1, col, General.Legend.RightMark);
+                        break;
+                    }
+                case General.eDirection.Idle:
+                    {
+                        break;
+                    }
+            }
+
+            if (Map[line][col] == (int)General.Legend.PlayerPath && this.TheAction == General.ePlayerAction.MoveInCrater)
+            // it reached the Path
+            {
                 // check if a Dragon Eye was made (loop in crater)
                 if (DragonEyeCompleted())
                 {
-//                    ShowMatrix();
+                    //                    
+                    ShowMatrix(Map);
+                    // wait for player P pause key
+                    // TODO: update Player points
+                }
 
-                    // update Player points
-                }
-            
                 this.TheAction = General.ePlayerAction.MoveOnGround;
-                InitMapWithGameMap();
-                }
+                Map = InitMapWith(TMD.GroundMap);
+            }
             
         }
 
         public void SetMapSideMark(int line, int col, General.Legend mark)
         {
-          if (line > 0 && line < General.TilesVertically && col>0 && col<General.TilesHorizontaly && Map[line][col] != (int)General.Legend.PlayerPath) 
+            if (line > 0 && col > 0 &&
+                line < General.TilesVertically &&
+                col < General.TilesHorizontaly &&
+                Map[line][col] != (int)General.Legend.PlayerPath)
             {
                 int pathSide = Map[line][col];
-                Map[line][col] =   (pathSide != (int)General.Legend.PlayerPath && pathSide != (int)General.Legend.DragonPath) ?
-                                    (int)mark 
-                                    : pathSide;
+                Map[line][col] = (pathSide != (int)General.Legend.DragonPath) ? (int)mark : pathSide;
             }
 
         }
@@ -177,59 +187,88 @@ namespace Desktop.Sprites
         private bool DragonEyeCompleted()
         {
 
-            General.Legend winZone = GetSmallerMapMark(); // LeftMark or RightMark
-            if (winZone == General.Legend.LeftMark || winZone == General.Legend.RightMark)
+            Point winPoint = GetSmallerMapMark(); // LeftMark or RightMark
+            if (winPoint != Point.Zero)
             {
-                CreateMountain(winZone);
-
+                CreateMountain(winPoint);
                 return true;
             }
             ActivePath = null;
             return false;
         }
 
-        protected  void InitMapWithGameMap()
+        protected  int[][] InitMapWith(int[][] origin)
         {
-            Map = new int[General.TilesVertically][];
+            int[][] map = new int[General.TilesVertically][];
             for (int i = 0; i < General.TilesVertically; i++)
             {
-                Map[i] = new int[General.TilesHorizontaly];
-                TMD.GroundMap[i].CopyTo(Map[i], 0);
+                map[i] = new int[General.TilesHorizontaly];
+                origin[i].CopyTo(map[i], 0);
             }
             ActivePath = null;
-            
+            return map;
         }
 
         /// <summary>
         /// Gets the smaller map mark between LeftMark & RightMark
         /// </summary>
         /// <returns>The smaller map mark.</returns>
-        private General.Legend GetSmallerMapMark()
+        private Point GetSmallerMapMark()
         {
-            int loopSizeLeftMark = 0;
-            int loopSizeRightMark = 0;
-                        loopSizeLeftMark = FillMapForMark(General.Legend.LeftMark);
-                        loopSizeRightMark= FillMapForMark(General.Legend.RightMark);
-           
-            if (loopSizeLeftMark > 0 && loopSizeRightMark > 0)
+            Point mark;
+            Point minMark = Point.Zero;
+
+            int marks = 375;
+            int minMarks = 375;
+
+            do
             {
-                if (loopSizeLeftMark < loopSizeRightMark)
-                    return General.Legend.LeftMark;
-                else return General.Legend.RightMark;
+                mark = GetFirstMarkPoint(Map, General.Legend.LeftMark);
+                marks = FillMapForMark(General.Legend.LeftMark, mark, 1);
+                if (marks<minMarks)
+                {
+                    minMarks = marks;
+                    minMark = new Point(mark.X, mark.Y);
+                }
             }
-            else return General.Legend.NoDragonPath; // no smaller map mark found
+            while (mark != Point.Zero);
+
+            do
+            {
+                mark = GetFirstMarkPoint(Map, General.Legend.RightMark);
+                marks = FillMapForMark(General.Legend.RightMark, mark, 1);
+                if (marks < minMarks)
+                {
+                    minMarks = marks;
+                    minMark = new Point(mark.X, mark.Y);
+                }
+            }
+            while (mark != Point.Zero);
+            return minMark;
+
         }
 
-
-
-
-        private void CreateMountain(General.Legend mark)
+        private Point GetFirstMarkPoint(int[][] map, General.Legend mark)
         {
             for (int line = 0; line < General.TilesVertically; line++)
             {
                 for (int col = 0; col < General.TilesHorizontaly; col++)
                 {
-                    if (Map[line][col] == (int)mark * 100)
+                    if (Map[line][col] == (int)mark) return new Point(col,line);
+                }
+            }
+
+            return Point.Zero;
+        }
+
+        private void CreateMountain(Point smallestAreaPoint)
+        {
+            FillMapForMark(General.Legend.MountainPath, smallestAreaPoint, 1);
+            for (int line = 0; line < General.TilesVertically; line++)
+            {
+                for (int col = 0; col < General.TilesHorizontaly; col++)
+                {
+                    if (Map[line][col] == (int)General.Legend.MountainPath)
                     {
                         Map[line][col] = (int)General.Legend.Mountain;
                         TMD.GroundMap[line][col] = (int)General.Legend.Mountain;
@@ -244,9 +283,11 @@ namespace Desktop.Sprites
                     }
                 }
             }
+
         }
 
-        private int FillMapForMark(int line, int col, General.Legend mark)
+
+        public int FillMapForMark(int line, int col, General.Legend mark)
         {
             if (Map[line][col] == (int)General.Legend.PlayerPath || Map[line][col] == (int)General.Legend.DragonPath)
             {
@@ -261,34 +302,32 @@ namespace Desktop.Sprites
         }
 
 
-        private int FillMapForMark(General.Legend mark)
+        private int FillMapForMark(General.Legend mark,Point toMark, int marks)
         {
-            bool exists = false;
-            int marks = 0; // number of cells to be completed with mark value
-            do
-            {
-                exists = false;
-                for (int line = 0; line < General.TilesVertically; line++)
-                    for (int col = 0; col < General.TilesHorizontaly; col++)
+            Map[toMark.Y][toMark.X] = (int)mark*100;  // transform in area mark
+                for (int line = -1; line < 1; line++)
+                    for (int col = -1; col < toMark.Y; col++)
                     {
-                        if (Map[line][col] == (int)mark)
+                        if (Math.Abs( col+line)== 1)
+                        if (!OutOfScreen(new Point(toMark.Y + line, toMark.X + col)))
+                        if (Map[toMark.Y + line][toMark.X + col] == (int)mark)
                         {
-                            exists = true;
-                            ++marks;
-                            Map[line][col] = (int)mark * 100; // cancel mark counting for next iteration
-                            // fill neighbour marks 
-                            for (int i = -1; i <= 1; i++)
-                                for (int j = -1; j <= 1; j++)
-                                    if (Map[line + i][col + j] == (int)General.Legend.Crater)
-                                    {
-                                        Map[line + i][col + j] = (int)mark;  // mark map with mark int value
-                                    }
+                           return marks + FillMapForMark(mark,new Point(toMark.X+col,toMark.Y+line),marks);
                         }
                     }
                
-            } while (exists);
             return marks;
         }
+
+        private bool OutOfScreen(Point point)
+        {
+            if (point.X > 0 && point.X < General.TilesHorizontaly && point.Y > 0 && point.Y < General.TilesVertically)
+            {
+                return false;
+            }
+            else return true;
+        }
+
         public List<Point> GetActivePath()
         {
             var activePath = new List<Point>();
