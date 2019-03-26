@@ -195,7 +195,7 @@ namespace Desktop.Sprites
             }
             else return false;
         }
-        public bool Collides()
+        public bool Collides(Point current)
         {
             foreach (var destination in TMD.Sprites.Values)
             {
@@ -203,7 +203,7 @@ namespace Desktop.Sprites
                 {
                     if (this.CollisionWith(destination))
                     {
-                        this.Stop();
+                        this.Stop(current);
                         return true;
                     }
                 }
@@ -261,7 +261,7 @@ namespace Desktop.Sprites
                 {
                     // dragon is free of player area
                 }
-                else if (!Collides() &&
+                else if (!Collides(new Point(dragonCol,dragonLine)) &&
                     pathToAttack.Path.Count > 1 &&
                     CanMove(pathToAttack.Path[1]))
                 {
