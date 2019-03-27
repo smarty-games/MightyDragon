@@ -97,10 +97,6 @@ namespace Desktop.Sprites
                 }
                 UpdatePosition();
 
-                if ((int)Position.X % StepX == 0 && (int)Position.Y % StepY == 0)
-                {
-                    Stop(new Point((int)Position.X/ StepX, (int)Position.Y % StepY));
-                }
                 SetAnimations();
                 _animationManager.Update(gameTime);
             }

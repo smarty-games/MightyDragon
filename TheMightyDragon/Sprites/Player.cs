@@ -85,13 +85,20 @@ namespace Desktop.Sprites
         }
         public override void UpdatePosition()
         {
-
             base.UpdatePosition();
             Point current = new Point((int)(Position.X / StepX), (int)(Position.Y / StepY));
             Point next = current;
 
+            if (OutOfScreen())
+            {
+                Stop(current);
+                return;
+            }
+
+
             if (((int)Position.Y % StepY) == 0 && ((int)Position.X % StepX) == 0)
             {
+                Move();
                 if (Direction != General.eDirection.Idle
                 && (TMD.GroundMap[current.Y][current.X] == (int)General.Legend.PlayerPath)
                 && TheAction == General.ePlayerAction.MoveInCrater)  // player returns on path
@@ -99,14 +106,15 @@ namespace Desktop.Sprites
                     Stop(current);
                     ShowMatrix(Map);
                 }
-                else if (Direction != General.eDirection.Idle && CanMove(ref next))
+                else //  check if player moves in Crater 
+                if (Direction != General.eDirection.Idle && CanMove(ref next))
                 {
                     if (TMD.GroundMap[next.Y][next.X] == (int)General.Legend.Crater)
+                    {
+                        Map[next.Y][next.X] = (int)General.Legend.DragonPath;
+                        TheAction = General.ePlayerAction.MoveInCrater;
+                    }
 
-                        if (TheAction == General.ePlayerAction.MoveOnGround)
-                        {   // player moves in danger zone (Crater)
-                            TheAction = General.ePlayerAction.MoveInCrater;
-                        }
                 }
             }
             Position += Velocity;
