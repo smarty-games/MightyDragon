@@ -79,14 +79,16 @@ namespace Desktop.Sprites
         }
         public override void Stop(Point current)
         {
-            UpdateMap(current.Y, current.X);
+            
             ShowMatrix(Map);
             base.Stop(current);
         }
         public override void UpdatePosition()
         {
             base.UpdatePosition();
+            // current player position before moving
             Point current = new Point((int)(Position.X / StepX), (int)(Position.Y / StepY));
+            // next point on player map towards player will eventually set its Direction & Velocity in Move() function call
             Point next = current;
 
             if (OutOfScreen())
@@ -94,40 +96,40 @@ namespace Desktop.Sprites
                 Stop(current);
                 return;
             }
-
-
+            
             if (((int)Position.Y % StepY) == 0 && ((int)Position.X % StepX) == 0)
             {
-                Move();
-                if (Direction != General.eDirection.Idle
-                && (TMD.GroundMap[current.Y][current.X] == (int)General.Legend.PlayerPath)
-                && TheAction == General.ePlayerAction.MoveInCrater)  // player returns on path
+                if (TMD.GroundMap[current.Y][current.X] == (int)General.Legend.Crater)
+                {
+                    Map[current.Y][current.X] = (int)General.Legend.DragonPath;
+                    UpdateMap(current.Y, current.X);
+                }
+                else if (TMD.GroundMap[current.Y][current.X] == (int)General.Legend.PlayerPath 
+                        && this.TheAction == General.ePlayerAction.MoveInCrater)
                 {
                     Stop(current);
-                    ShowMatrix(Map);
+                    this.TheAction = General.ePlayerAction.MoveOnGround;
+                    return;
                 }
-                else //  check if player moves in Crater 
-                if (Direction != General.eDirection.Idle && CanMove(ref next))
+                Move();
+                if (CanMove(ref next))
                 {
-                    if (TMD.GroundMap[next.Y][next.X] == (int)General.Legend.Crater)
-                    {
-                        Map[next.Y][next.X] = (int)General.Legend.DragonPath;
+                    if (TMD.GroundMap[next.Y][next.X] == (int)General.Legend.Crater 
+                     && TMD.GroundMap[current.Y][current.X] == (int)General.Legend.PlayerPath)
+                    { // player leaves path
                         TheAction = General.ePlayerAction.MoveInCrater;
                     }
-
+                    else if (TMD.GroundMap[next.Y][next.X] == (int)General.Legend.PlayerPath
+                          && TMD.GroundMap[current.Y][current.X] == (int)General.Legend.Crater)
+                    { // player returns to his path
+                    }
                 }
             }
             Position += Velocity;
         }
         private void UpdateMap(int line, int col)
         {
-
-            if (Map[line][col] != (int)General.Legend.PlayerPath)
-            {
-                Map[line][col] = (int)General.Legend.DragonPath;
-            }
             // set Crater (2) on Player path. Here, Action for player should be MoveOnCrater already
-
             switch (Direction)
             {
                 case General.eDirection.Up:
@@ -159,35 +161,25 @@ namespace Desktop.Sprites
                         break;
                     }
             }
-
-            if (Map[line][col] == (int)General.Legend.PlayerPath && this.TheAction == General.ePlayerAction.MoveInCrater)
-            // it reached the Path
+            ShowMatrix(Map);
+            if (DragonEyeCompleted())
             {
-                ShowMatrix(Map);
-                // check if a Dragon Eye was made (loop in crater)
-                        if (DragonEyeCompleted())
-                {
-                    //                    
-                    // 
-                    // wait for player P pause key
-                    // TODO: update Player points
-                }
-
-                this.TheAction = General.ePlayerAction.MoveOnGround;
-                Map = InitMapWith(TMD.GroundMap);
+                // 
+                // wait for player P pause key
+                // TODO: update Player points
             }
-            
+            this.TheAction = General.ePlayerAction.MoveOnGround;
+            Map = InitMapWith(TMD.GroundMap);
         }
-
         public void SetMapSideMark(int line, int col, General.Legend mark)
         {
-            if (line > 0 && col > 0 &&
-                line < General.TilesVertically &&
-                col < General.TilesHorizontaly &&
-                Map[line][col] != (int)General.Legend.PlayerPath)
+            if (line > 0 && col > 0
+                && line < General.TilesVertically
+                && col < General.TilesHorizontaly
+                && Map[line][col] != (int)General.Legend.PlayerPath
+                && Map[line][col] != (int)General.Legend.DragonPath)
             {
-                int pathSide = Map[line][col];
-                Map[line][col] = (pathSide != (int)General.Legend.DragonPath) ? (int)mark : pathSide;
+                Map[line][col] = (int)mark;
             }
 
         }
