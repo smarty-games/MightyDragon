@@ -185,7 +185,6 @@ namespace Desktop.Sprites
 
         protected void ShowMatrix(int[][] map)
         {
-            Console.Clear();
             for (int line = 0; line < General.TilesVertically; line++)
             {
                 for (int col = 0; col < General.TilesHorizontaly; col++)
