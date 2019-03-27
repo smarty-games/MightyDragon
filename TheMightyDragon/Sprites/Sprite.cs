@@ -97,15 +97,11 @@ namespace Desktop.Sprites
                 }
                 UpdatePosition();
 
-                if ((int)Position.X % StepX == 0 && (int)Position.Y % StepY == 0)
-                {
-                    Stop();
-                }
                 SetAnimations();
                 _animationManager.Update(gameTime);
             }
         }
-        public virtual void Stop()
+        public virtual void Stop(Point current)
         {
             Direction = General.eDirection.Idle;
             Speed = 0f;
@@ -114,7 +110,7 @@ namespace Desktop.Sprites
 
         public virtual void Move()
         {
-
+                Velocity = Vector2.Zero;
                 if (Keyboard.GetState().IsKeyDown(Input.Up))
                 {
                     Speed = General.GameSpeed;

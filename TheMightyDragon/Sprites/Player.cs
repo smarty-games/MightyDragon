@@ -35,22 +35,21 @@ namespace Desktop.Sprites
         /// check for matrix values (1) accepted for player next position
         /// </summary>
         /// <returns></returns>
-        public bool CanMove(Point from, out Point next)
+        public bool CanMove(ref Point next)
         {
-            next = new Point(from.Y,from.X);
             switch (Direction)
             {
                 case General.eDirection.Up:
-                    next.Y = from.Y - 1;
+                    next.Y -= 1;
                     break;
                 case General.eDirection.Down:
-                    next.Y = from.Y + 1;
+                    next.Y += 1;
                     break;
                 case General.eDirection.Left:
-                    next.X = from.X - 1;
+                    next.X -= 1;
                     break;
                 case General.eDirection.Right:
-                    next.Y = from.Y + 1;
+                    next.X += 1;
                     break;
                 case General.eDirection.Idle:
                     return false;
@@ -58,8 +57,7 @@ namespace Desktop.Sprites
                 default: break;
             }
 
-            if (!(OutOfScreen(new Point(next.X,next.Y)))) 
-            if (TMD.GroundMap[next.Y][next.X] != (int)General.Legend.Mountain)
+            if (!OutOfScreen(next) && TMD.GroundMap[next.Y][next.X] != (int)General.Legend.Mountain)
             {
                 return true;
             }
@@ -79,37 +77,47 @@ namespace Desktop.Sprites
             }
             return false;
         }
-
-        public override void Stop()
+        public override void Stop(Point current)
         {
-
-            if (((int)Position.Y % StepY) == 0 && ((int)Position.X % StepX) == 0 && TheAction == General.ePlayerAction.MoveInCrater)
-            {
-                UpdateMap((int)((int)Position.Y / StepY), (int)((int)Position.X / StepX));
-            }
-            base.Stop();
-
+            UpdateMap(current.Y, current.X);
+            ShowMatrix(Map);
+            base.Stop(current);
         }
         public override void UpdatePosition()
         {
+            base.UpdatePosition();
+            Point current = new Point((int)(Position.X / StepX), (int)(Position.Y / StepY));
+            Point next = current;
 
-                base.UpdatePosition();
-                Point current = new Point((int)(Position.X / StepX), (int)(Position.Y / StepY));
-                Point next = new Point(0, 0);
+            if (OutOfScreen())
+            {
+                Stop(current);
+                return;
+            }
 
-                if (CanMove(current,out next) && !OutOfScreen())
+
+            if (((int)Position.Y % StepY) == 0 && ((int)Position.X % StepX) == 0)
+            {
+                Move();
+                if (Direction != General.eDirection.Idle
+                && (TMD.GroundMap[current.Y][current.X] == (int)General.Legend.PlayerPath)
+                && TheAction == General.ePlayerAction.MoveInCrater)  // player returns on path
                 {
-                    Position += Velocity;
-                    if (TMD.GroundMap[next.Y][next.X] != (int)General.Legend.PlayerPath // means that player moves in danger zone (Crater)
-                        && TheAction == General.ePlayerAction.MoveOnGround) // our player gets bravely into the Crater
+                    Stop(current);
+                    ShowMatrix(Map);
+                }
+                else //  check if player moves in Crater 
+                if (Direction != General.eDirection.Idle && CanMove(ref next))
+                {
+                    if (TMD.GroundMap[next.Y][next.X] == (int)General.Legend.Crater)
                     {
+                        Map[next.Y][next.X] = (int)General.Legend.DragonPath;
                         TheAction = General.ePlayerAction.MoveInCrater;
                     }
+
                 }
-                else
-                {
-                    Direction = General.eDirection.Idle;
-                }
+            }
+            Position += Velocity;
         }
         private void UpdateMap(int line, int col)
         {
@@ -155,11 +163,12 @@ namespace Desktop.Sprites
             if (Map[line][col] == (int)General.Legend.PlayerPath && this.TheAction == General.ePlayerAction.MoveInCrater)
             // it reached the Path
             {
+                ShowMatrix(Map);
                 // check if a Dragon Eye was made (loop in crater)
-                if (DragonEyeCompleted())
+                        if (DragonEyeCompleted())
                 {
                     //                    
-                    ShowMatrix(Map);
+                    // 
                     // wait for player P pause key
                     // TODO: update Player points
                 }
@@ -320,7 +329,7 @@ namespace Desktop.Sprites
 
         private bool OutOfScreen(Point point)
         {
-            if (point.X > 0 && point.X < General.TilesHorizontaly && point.Y > 0 && point.Y < General.TilesVertically)
+            if (point.X >=0 && point.X < General.TilesHorizontaly && point.Y >= 0 && point.Y < General.TilesVertically)
             {
                 return false;
             }
