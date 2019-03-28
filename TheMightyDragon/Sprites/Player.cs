@@ -79,7 +79,6 @@ namespace Desktop.Sprites
         }
         public override void Stop(Point current)
         {
-            
             ShowMatrix(Map);
             base.Stop(current);
         }
@@ -103,12 +102,18 @@ namespace Desktop.Sprites
                 {
                     Map[current.Y][current.X] = (int)General.Legend.DragonPath;
                     UpdateMap(current.Y, current.X);
+                    this.TheAction = General.ePlayerAction.MoveInCrater;
+
                 }
                 else if (TMD.GroundMap[current.Y][current.X] == (int)General.Legend.PlayerPath 
                         && this.TheAction == General.ePlayerAction.MoveInCrater)
-                {
+                { // returns 
                     Stop(current);
                     this.TheAction = General.ePlayerAction.MoveOnGround;
+                    if (DragonEyeCompleted())
+                    {
+                        ShowMatrix(Map);
+                    }
                     return;
                 }
                 Move();
@@ -118,10 +123,6 @@ namespace Desktop.Sprites
                      && TMD.GroundMap[current.Y][current.X] == (int)General.Legend.PlayerPath)
                     { // player leaves path
                         TheAction = General.ePlayerAction.MoveInCrater;
-                    }
-                    else if (TMD.GroundMap[next.Y][next.X] == (int)General.Legend.PlayerPath
-                          && TMD.GroundMap[current.Y][current.X] == (int)General.Legend.Crater)
-                    { // player returns to his path
                     }
                 }
             }
@@ -161,15 +162,6 @@ namespace Desktop.Sprites
                         break;
                     }
             }
-            ShowMatrix(Map);
-            if (DragonEyeCompleted())
-            {
-                // 
-                // wait for player P pause key
-                // TODO: update Player points
-            }
-            this.TheAction = General.ePlayerAction.MoveOnGround;
-            Map = InitMapWith(TMD.GroundMap);
         }
         public void SetMapSideMark(int line, int col, General.Legend mark)
         {
